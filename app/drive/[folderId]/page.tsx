@@ -15,8 +15,7 @@ export default async function Page({
   const currentFolderId = awaitedParams.folderId;
   const userId = '0'; // For simplicity, using a fixed userId. In a real app, you'd get this from the session.
 
-  const storedFiles = getFilesByParent(currentFolderId, userId, false);
-  const trashedFiles = getFilesByParent(currentFolderId, userId, true);
+  const storedFiles = getFilesByParent(currentFolderId, userId);
 
   return (
     <div className="min-h-screen bg-muted/40">
@@ -33,7 +32,6 @@ export default async function Page({
         </div>
 
         <FileView filesPromise={storedFiles} fileViewPage='default'/>
-        <FileView filesPromise={trashedFiles} fileViewPage='trashed'/>
       </div>
     </div>
   );

@@ -7,6 +7,10 @@ import { ReadableStream } from 'stream/web';
 export async function POST(req: Request) {
   const { ids }: { ids: string[] } = await req.json();
   const userId = '0'; // For simplicity, using a fixed ownerId. In a real app, you'd get this from the session.
+
+  if (!ids || !Array.isArray(ids)) {
+    return new Response('Invalid ids', { status: 400 });
+  }
   const items = await getFilesById(ids, userId);
 
   const files = items.filter((i) => !i.is_dir);
@@ -49,8 +53,8 @@ export async function POST(req: Request) {
   }
 
   for (const folder of folders) {
-    archive.append('', { 
-      name: buildFullPath(folder, byId) + '/' 
+    archive.append('', {
+      name: buildFullPath(folder, byId) + '/',
     });
   }
 

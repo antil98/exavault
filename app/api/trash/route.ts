@@ -4,10 +4,14 @@ export async function POST(req: Request) {
   const userId = '0';
   const { ids }: { ids: string[] } = await req.json();
 
-  const items = await getFilesById(ids, userId);
-  const allIds = items.map(i => i.id);
+  if (!ids || !Array.isArray(ids)) {
+    return new Response('Invalid ids', { status: 400 });
+  }
 
   try {
+    const items = await getFilesById(ids, userId);
+    const allIds = items.map((i) => i.id);
+    
     await trashFiles(allIds, userId);
 
     return Response.json({ success: true });

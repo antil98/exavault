@@ -23,7 +23,7 @@ export default function FileView({filesPromise, fileViewPage}: {filesPromise: Pr
     return (
       <div className="p-4">
         <h2 className="text-2xl font-bold mb-4">Files</h2>
-        <p className="text-gray-600">No files uploaded yet.</p>
+        <p className="text-gray-600">The folder is empty!</p>
       </div>
     );
   }
@@ -40,7 +40,7 @@ export default function FileView({filesPromise, fileViewPage}: {filesPromise: Pr
               ids={selectedIds}
             >
               <li
-                title="Right click for more options"
+                title={file.name}
                 onClick={(e) => {
                   if (e.shiftKey) {
                     select(file.id, 'shift', orderedIds);

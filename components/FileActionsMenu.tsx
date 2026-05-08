@@ -89,6 +89,7 @@ export default function FileActionsMenu({
       await deleteForever(ids);
 
       toast.success('Deleted permanently', { id: toastId });
+      router.refresh();
     } catch (err) {
       console.error(err);
       toast.error('Delete failed', { id: toastId });
@@ -149,7 +150,7 @@ export default function FileActionsMenu({
                       <RotateCcw />
                       Restore file(s)
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDeleteForever}>
                       <Trash2 />
                       Delete permanently
                     </DropdownMenuItem>

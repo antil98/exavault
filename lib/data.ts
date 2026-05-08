@@ -52,27 +52,33 @@ export async function uploadFile({
   `;
 }
 
-export async function getFilesByParent(parentId: string | null, ownerId: string, isTrashed: boolean): Promise<FileItem[]> {
+export async function getFilesByParent(
+  parentId: string | null,
+  ownerId: string,
+): Promise<FileItem[]> {
   const result = parentId
     ? await sql`
         SELECT * FROM files
         WHERE parent_id = ${parentId}
         AND owner_id = ${ownerId}
-        AND is_trashed = ${isTrashed}
+        AND is_trashed = false
         ORDER BY is_dir DESC, name DESC
       `
     : await sql`
         SELECT * FROM files
         WHERE parent_id IS NULL
         AND owner_id = ${ownerId}
-        AND is_trashed = ${isTrashed}
+        AND is_trashed = false
         ORDER BY is_dir DESC, name DESC
       `;
 
   return result as FileItem[];
 }
 
-export async function getFilesById(ids: string[], ownerId: string): Promise<FileItem[]> {
+export async function getFilesById(
+  ids: string[],
+  ownerId: string,
+): Promise<FileItem[]> {
   const result = await sql`
     WITH RECURSIVE tree AS (
       SELECT *, ARRAY[id] AS path
@@ -96,13 +102,38 @@ export async function getFilesById(ids: string[], ownerId: string): Promise<File
   return result as FileItem[];
 }
 
-export async function trashFiles(ids: string[], ownerId: string, isTrashed: boolean = true) {
+export async function trashFiles(
+  ids: string[],
+  ownerId: string,
+  isTrashed = true,
+) {
   await sql`
     UPDATE files
     SET is_trashed = ${isTrashed}
     WHERE owner_id = ${ownerId}
     AND id = ANY(${ids})
   `;
+}
+
+export async function getTrashedFiles(
+  parentId: string | null,
+  ownerId: string,
+): Promise<FileItem[]> {
+  const result = await sql`
+    SELECT 
+      f.*,
+      p.is_trashed AS parent_is_trashed,
+      CASE 
+        WHEN p.is_trashed = false THEN NULL
+        ELSE f.parent_id
+      END AS trash_parent_group
+    FROM files f
+    LEFT JOIN files p ON f.parent_id = p.id
+    WHERE f.owner_id = ${ownerId}
+    AND f.is_trashed = true
+  `;
+
+  return result as FileItem[];
 }
 
 export async function deleteForever(ids: string[], ownerId: string) {
