@@ -1,4 +1,4 @@
-import { SelectionState } from '@/types/selection-type';
+import { SelectionState } from '@/types/selection';
 
 export function updateSelection({
   id,
@@ -7,13 +7,24 @@ export function updateSelection({
   itemsOrdered,
 }: {
   id: string;
-  type: 'click' | 'ctrl' | 'shift';
+  type: 'click' | 'right' | 'ctrl' | 'shift';
   state: SelectionState;
   itemsOrdered: string[];
 }) {
   const newSelected = new Set(state.selectedIds);
 
-  // normal click → replace selection
+  if (type === 'right') {
+    if (!newSelected.has(id)) {
+      newSelected.clear();
+      newSelected.add(id);
+    }
+
+    return {
+      selectedIds: newSelected,
+      lastSelectedId: id,
+    };
+  }
+
   if (type === 'click') {
     newSelected.clear();
     newSelected.add(id);
@@ -23,7 +34,6 @@ export function updateSelection({
     };
   }
 
-  // ctrl/cmd → toggle
   if (type === 'ctrl') {
     if (newSelected.has(id)) newSelected.delete(id);
     else newSelected.add(id);
@@ -34,7 +44,6 @@ export function updateSelection({
     };
   }
 
-  // shift → range select
   if (type === 'shift' && state.lastSelectedId) {
     const start = itemsOrdered.indexOf(state.lastSelectedId);
     const end = itemsOrdered.indexOf(id);

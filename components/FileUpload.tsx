@@ -5,13 +5,12 @@ import { upload } from '@vercel/blob/client';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 export default function FileUpload({
   currentFolderId,
-  userId,
 }: {
   currentFolderId: string;
-  userId: string;
 }) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -19,16 +18,19 @@ export default function FileUpload({
 
   async function handleUpload() {
     if (files.length === 0) return;
+
     setUploading(true);
+
+    const uploadToast = toast.loading('Uploading files...');
 
     try {
       await Promise.all(
         files.map((file) => {
-          const pathname = `${userId}/${currentFolderId}/${file.name}`;
+          const pathname = `${currentFolderId}/${file.name}`;
 
           return upload(pathname, file, {
             access: 'public',
-            handleUploadUrl: `/api/upload?userId=${userId}`,
+            handleUploadUrl: '/api/upload',
             clientPayload: JSON.stringify({
               parentId: currentFolderId,
               size: file.size,
@@ -38,10 +40,18 @@ export default function FileUpload({
         }),
       );
 
+      toast.success('Files uploaded successfully!', {
+        id: uploadToast,
+      });
+
       await new Promise((res) => setTimeout(res, 800));
       router.refresh();
     } catch (err) {
       console.error('Upload failed:', err);
+
+      toast.error('Upload failed. Please try again.', {
+        id: uploadToast,
+      });
     } finally {
       setUploading(false);
     }
@@ -49,18 +59,19 @@ export default function FileUpload({
 
   return (
     <div>
-      <div className="text-sky-300">CurrentDir: {currentFolderId}</div>
-      <div className="text-red-300">User: {userId}</div>
-
       <div className="flex items-center gap-3">
         <Input
           type="file"
           multiple
           onChange={(e) => setFiles(Array.from(e.target.files || []))}
+          className="min-w-20"
         />
 
-        <Button onClick={handleUpload} disabled={uploading || files.length === 0} variant={'outline'}>
-          {uploading ? 'Uploading...' : 'Upload'}
+        <Button
+          onClick={handleUpload}
+          disabled={uploading || files.length === 0}
+        >
+          Upload
         </Button>
       </div>
     </div>

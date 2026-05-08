@@ -2,21 +2,14 @@ import { handleUpload } from '@vercel/blob/client';
 import { uploadFile } from '../../../lib/data';
 
 export async function POST(req: Request) {
-  console.log('API reached');
-
   const body = await req.json();
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get('userId') ?? 'dev-user'; // ← authoritative (for now)
-
-  console.log(userId);
+  const userId = '0'; // Default userId for testing
 
   try {
     const jsonResponse = await handleUpload({
       body,
       request: req,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
-        console.log('Generating Token in API: onBeforeGenerateToken');
-
         return {
           allowedContentTypes: [
             // Multimedia
@@ -45,13 +38,11 @@ export async function POST(req: Request) {
             'application/gzip',
           ],
           addRandomSuffix: true,
-          callbackUrl: `https://exavault.vercel.app/api/upload?userId=${userId}`,
-          tokenPayload: clientPayload, // Pass the client payload through to the callback
+          callbackUrl: 'https://exavault.vercel.app/api/upload',
+          tokenPayload: clientPayload,
         };
       },
       onUploadCompleted: async ({ blob, tokenPayload }) => {
-        console.log('Callback: onUploadCompleted');
-
         try {
           const parsed = JSON.parse(tokenPayload ?? '{}');
 
@@ -72,7 +63,7 @@ export async function POST(req: Request) {
     });
 
     return Response.json(jsonResponse);
-  } catch (error) {
+  } catch {
     return new Response('Upload failed', { status: 500 });
   }
 }

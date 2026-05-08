@@ -1,5 +1,15 @@
-import { sql } from './db';
+import { sql } from '@/lib/db';
 import { FileItem } from '@/types/file-type';
+import { getUniqueName } from './utils';
+
+export async function getFiles(parentId: string | null, ownerId: string) {
+  return await sql`
+    SELECT name
+    FROM files
+    WHERE parent_id = ${parentId}
+    AND owner_id = ${ownerId}
+  `;
+}
 
 export async function uploadFile({
   url,
@@ -16,6 +26,10 @@ export async function uploadFile({
   name: string;
   ownerId: string;
 }) {
+  const existingFile = await getFiles(parentId, ownerId);
+  const existingNames = existingFile.map((file) => file.name);
+  const finalName = getUniqueName(name, existingNames);
+
   await sql`
     INSERT INTO files (
       name,
@@ -27,7 +41,7 @@ export async function uploadFile({
       size
     )
     VALUES (
-      ${name},
+      ${finalName},
       ${parentId},
       ${ownerId},
       false,
@@ -38,26 +52,63 @@ export async function uploadFile({
   `;
 }
 
-export async function getFilesByParent({
-  parentId,
-  ownerId,
-}: {
-  parentId: string | null;
-  ownerId: string;
-}): Promise<FileItem[]> {
+export async function getFilesByParent(parentId: string | null, ownerId: string, isTrashed: boolean): Promise<FileItem[]> {
   const result = parentId
     ? await sql`
         SELECT * FROM files
         WHERE parent_id = ${parentId}
         AND owner_id = ${ownerId}
-        ORDER BY created_at DESC
+        AND is_trashed = ${isTrashed}
+        ORDER BY is_dir DESC, name DESC
       `
     : await sql`
         SELECT * FROM files
         WHERE parent_id IS NULL
         AND owner_id = ${ownerId}
-        ORDER BY is_dir DESC, created_at DESC
+        AND is_trashed = ${isTrashed}
+        ORDER BY is_dir DESC, name DESC
       `;
 
   return result as FileItem[];
+}
+
+export async function getFilesById(ids: string[], ownerId: string): Promise<FileItem[]> {
+  const result = await sql`
+    WITH RECURSIVE tree AS (
+      SELECT *, ARRAY[id] AS path
+      FROM files
+      WHERE id = ANY(${ids})
+      AND owner_id = ${ownerId}
+
+      UNION ALL
+
+      SELECT f.*, t.path || f.id
+      FROM files f
+      INNER JOIN tree t 
+        ON f.parent_id = t.id
+      WHERE t.is_dir = true
+      AND f.owner_id = ${ownerId}
+      AND NOT f.id = ANY(t.path)
+    )
+    SELECT * FROM tree;
+  `;
+
+  return result as FileItem[];
+}
+
+export async function trashFiles(ids: string[], ownerId: string, isTrashed: boolean = true) {
+  await sql`
+    UPDATE files
+    SET is_trashed = ${isTrashed}
+    WHERE owner_id = ${ownerId}
+    AND id = ANY(${ids})
+  `;
+}
+
+export async function deleteForever(ids: string[], ownerId: string) {
+  await sql`
+    DELETE FROM files
+    WHERE id = ANY(${ids})
+    AND owner_id = ${ownerId}
+  `;
 }

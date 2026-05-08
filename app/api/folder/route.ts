@@ -1,10 +1,8 @@
 import { sql } from '@/lib/db';
+import { getUniqueName } from '@/lib/utils';
 
 export async function POST(req: Request) {
-  console.log('API folder reached');
-
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get('userId') ?? 'dev-user';
+  const userId = '0'; // Default userId for testing
 
   const body = await req.json();
   const { name, parentId } = body;
@@ -14,6 +12,17 @@ export async function POST(req: Request) {
   }
 
   try {
+    const existing = await sql`
+      SELECT name
+      FROM files
+      WHERE parent_id = ${parentId ?? null}
+      AND owner_id = ${userId}
+      AND is_dir = true
+    `;
+
+    const existingNames = existing.map((file) => file.name);
+    const finalName = getUniqueName(name, existingNames);
+
     await sql`
       INSERT INTO files (
         name,
@@ -22,7 +31,7 @@ export async function POST(req: Request) {
         is_dir
       )
       VALUES (
-        ${name},
+        ${finalName},
         ${parentId ?? null},
         ${userId},
         true

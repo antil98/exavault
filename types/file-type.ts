@@ -1,5 +1,7 @@
 export type FileItem = {
   id: string;
+  parent_id: string | null;
+  owner_id: string;
   name: string;
   url: string;
   size: number;

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,20 +12,20 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
-
 import { Field, FieldGroup } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { LoaderCircle } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 export default function CreateFolder({
   currentFolderId,
-  userId,
 }: {
   currentFolderId: string;
-  userId: string;
 }) {
   const [name, setName] = useState('');
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
@@ -35,28 +34,49 @@ export default function CreateFolder({
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!name.trim()) return;
+    if (!name.trim() || loading) return;
 
-    await fetch(`/api/folder?userId=${userId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name,
-        parentId,
-      }),
-    });
+    setLoading(true);
 
-    setName('');
-    setOpen(false);
-    router.refresh();
+    try {
+      const res = await fetch('/api/folder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          parentId,
+        }),
+      });
+
+      if (!res.ok) throw new Error();
+
+      setName('');
+      setOpen(false);
+      router.refresh();
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (isOpen) {
+          setName('');
+        }
+      }}
+    >
       <DialogTrigger
-        render={<Button variant="secondary">+ New Folder</Button>}
+        render={
+          <Button variant="secondary">
+            <Plus className="h-4 w-4" />
+            New Folder
+          </Button>
+        }
       />
 
       <DialogContent className="sm:max-w-sm">
@@ -72,7 +92,7 @@ export default function CreateFolder({
               </Label>
               <Input
                 id="folder-name"
-                className='mb-5'
+                className="mb-5"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="My folder..."
@@ -82,7 +102,22 @@ export default function CreateFolder({
 
           <DialogFooter>
             <DialogClose render={<Button variant="outline">Cancel</Button>} />
-            <Button type="submit">Create</Button>
+            <Button
+              type="submit"
+              disabled={loading || !name.trim()}
+              className="relative"
+            >
+              <span className={loading ? 'opacity-0' : 'opacity-100'}>
+                Create Folder
+              </span>
+
+              {loading && (
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <LoaderCircle className="animate-spin mr-1" />
+                  Creating...
+                </span>
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
