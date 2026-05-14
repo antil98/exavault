@@ -1,12 +1,24 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useSelection } from '@/hooks/useSelection';
 import { FileItem } from '@/types/file-type';
 import FileActionsMenu from './FileActionsMenu';
 import Link from 'next/link';
 import { Folder, File } from 'lucide-react';
-import { Separator } from './ui/separator';
+import { deleteForever, trashFiles } from '@/lib/file-actions';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog';
 
 export default function FileView({
   filesPromise,
@@ -16,10 +28,74 @@ export default function FileView({
   fileViewPage: 'files' | 'trash';
 }) {
   const { state, select } = useSelection();
+  const [keyboardDeleteOpen, setKeyboardDeleteOpen] = useState(false);
+  const [keyboardDeleteIds, setKeyboardDeleteIds] = useState<string[]>([]);
+  const [keyboardDeleting, setKeyboardDeleting] = useState(false);
+  const router = useRouter();
 
   const files = use(filesPromise);
   const orderedIds = files.map((f) => f.id);
   const selectedIds = Array.from(state.selectedIds);
+
+  useEffect(() => {
+    async function handleDeleteKey(e: KeyboardEvent) {
+      if (e.key !== 'Delete' || !selectedIds.length) return;
+
+      const target = e.target as HTMLElement | null;
+      const isTyping =
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        target?.isContentEditable;
+
+      if (isTyping) return;
+
+      e.preventDefault();
+
+      try {
+        // The keyboard shortcut mirrors the visible menu action for each page:
+        // files go to trash, while trash items are permanently deleted.
+        if (fileViewPage === 'files') {
+          await trashFiles(selectedIds);
+          toast.success('File(s) moved to trash');
+          router.refresh();
+        } else {
+          // Permanent deletes still need confirmation, so store the exact
+          // selected ids from the moment the Delete key was pressed.
+          setKeyboardDeleteIds(selectedIds);
+          setKeyboardDeleteOpen(true);
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error(
+          fileViewPage === 'files'
+            ? 'Failed to move file(s) to trash'
+            : 'Failed to delete permanently',
+        );
+      }
+    }
+
+    window.addEventListener('keydown', handleDeleteKey);
+    return () => window.removeEventListener('keydown', handleDeleteKey);
+  }, [fileViewPage, router, selectedIds]);
+
+  async function handleKeyboardDeleteForever() {
+    if (!keyboardDeleteIds.length || keyboardDeleting) return;
+
+    setKeyboardDeleting(true);
+
+    try {
+      await deleteForever(keyboardDeleteIds);
+      toast.success('Deleted permanently');
+      setKeyboardDeleteOpen(false);
+      setKeyboardDeleteIds([]);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to delete permanently');
+    } finally {
+      setKeyboardDeleting(false);
+    }
+  }
 
   if (!files.length) {
     return (
@@ -55,6 +131,11 @@ export default function FileView({
               menuType="context"
               fileViewPage={fileViewPage}
               ids={selectedIds}
+              // The menu receives row metadata so unselected-row actions still
+              // target the row that opened the menu.
+              primaryId={file.id}
+              primaryName={file.name}
+              isPrimarySelected={state.selectedIds.has(file.id)}
             >
               <div
                 title={file.name}
@@ -131,6 +212,9 @@ export default function FileView({
                     menuType="dropdown"
                     fileViewPage={fileViewPage}
                     ids={selectedIds}
+                    primaryId={file.id}
+                    primaryName={file.name}
+                    isPrimarySelected={state.selectedIds.has(file.id)}
                     onSelectItem={() => select(file.id, 'click', orderedIds)}
                   />
                 </div>
@@ -193,6 +277,9 @@ export default function FileView({
                   menuType="dropdown"
                   fileViewPage={fileViewPage}
                   ids={selectedIds}
+                  primaryId={file.id}
+                  primaryName={file.name}
+                  isPrimarySelected={state.selectedIds.has(file.id)}
                   onSelectItem={() => select(file.id, 'click', orderedIds)}
                 />
               </div>
@@ -200,6 +287,32 @@ export default function FileView({
           );
         })}
       </div>
+
+      <AlertDialog
+        open={keyboardDeleteOpen}
+        onOpenChange={setKeyboardDeleteOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The selected files will be permanently deleted from our servers.
+              This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={keyboardDeleting}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={keyboardDeleting}
+              onClick={handleKeyboardDeleteForever}
+            >
+              {keyboardDeleting ? 'Deleting...' : 'Continue'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

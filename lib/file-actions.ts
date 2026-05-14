@@ -22,17 +22,32 @@ export async function downloadFiles(ids: string[]) {
 }
 
 export async function renameFile(id: string, newName: string) {
-  await fetch('/api/files/rename', {
+  const res = await fetch('/api/files/rename', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id, newName }),
   });
+
+  // Let the rename modal render server-side conflicts inline with aria-invalid.
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.message || 'Rename failed');
+  }
 }
 
 export async function moveFiles(ids: string[], targetFolderId: string) {
-  await fetch('/api/files/move', {
+  const res = await fetch('/api/files/move', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ids, targetFolderId }),
   });
+
+  // Move can fail for destination conflicts or invalid folder cycles; bubble
+  // that message back to the picker instead of hiding it behind a generic toast.
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.message || 'Move failed');
+  }
 }
 
 export async function trashFiles(ids: string[]) {

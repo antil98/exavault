@@ -29,8 +29,6 @@ import {
 } from 'lucide-react';
 import {
   downloadFiles,
-  renameFile,
-  moveFiles,
   trashFiles,
   restoreFiles,
   deleteForever,
@@ -48,28 +46,43 @@ import {
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import RenameDialog from './RenameDialog';
+import MoveDialog from './MoveDialog';
 
 export default function FileActionsMenu({
   menuType,
   fileViewPage,
   ids,
+  primaryId,
+  primaryName,
+  isPrimarySelected = false,
   children,
   onSelectItem,
 }: {
   menuType: 'dropdown' | 'context';
   fileViewPage: 'files' | 'trash';
   ids: string[];
+  primaryId?: string;
+  primaryName?: string;
+  isPrimarySelected?: boolean;
   children?: React.ReactNode;
   onSelectItem?: () => void;
 }) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const router = useRouter();
+  // If the row is not selected yet, menu actions should operate on that row
+  // instead of an older selection from elsewhere in the list.
+  const effectiveIds =
+    primaryId && (!isPrimarySelected || !ids.length) ? [primaryId] : ids;
+  const canRename = fileViewPage === 'files' && effectiveIds.length === 1;
 
   async function handleZipDownload() {
-    const zipToast = toast.loading(`Zipping ${ids.length} file(s)...`);
+    const zipToast = toast.loading(`Zipping ${effectiveIds.length} file(s)...`);
 
     try {
-      await downloadFiles(ids);
+      await downloadFiles(effectiveIds);
       toast.success('Download ready', {
         id: zipToast,
       });
@@ -83,13 +96,13 @@ export default function FileActionsMenu({
   }
 
   async function handleTrash() {
-    await trashFiles(ids);
+    await trashFiles(effectiveIds);
     toast.success('File(s) moved to trash');
     router.refresh();
   }
 
   async function handleRestore() {
-    await restoreFiles(ids);
+    await restoreFiles(effectiveIds);
     toast.success('File(s) restored');
     router.refresh();
   }
@@ -98,7 +111,7 @@ export default function FileActionsMenu({
     const toastId = toast.loading('Deleting permanently...');
 
     try {
-      await deleteForever(ids);
+      await deleteForever(effectiveIds);
 
       toast.success('Deleted permanently', { id: toastId });
       router.refresh();
@@ -137,11 +150,14 @@ export default function FileActionsMenu({
                       <Download />
                       Download
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem
+                      disabled={!canRename}
+                      onClick={() => setRenameDialogOpen(true)}
+                    >
                       <Pencil />
                       Rename
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setMoveDialogOpen(true)}>
                       <Move />
                       Move to...
                     </DropdownMenuItem>
@@ -185,11 +201,14 @@ export default function FileActionsMenu({
                     <Download />
                     Download
                   </ContextMenuItem>
-                  <ContextMenuItem disabled={ids.length > 1}>
-                    <Pencil />
-                    Rename
-                  </ContextMenuItem>
-                  <ContextMenuItem>
+                    <ContextMenuItem
+                      disabled={!canRename}
+                      onClick={() => setRenameDialogOpen(true)}
+                    >
+                      <Pencil />
+                      Rename
+                    </ContextMenuItem>
+                  <ContextMenuItem onClick={() => setMoveDialogOpen(true)}>
                     <Move />
                     Move to...
                   </ContextMenuItem>
@@ -232,6 +251,19 @@ export default function FileActionsMenu({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <RenameDialog
+        open={renameDialogOpen}
+        onOpenChange={setRenameDialogOpen}
+        id={canRename ? effectiveIds[0] : null}
+        currentName={primaryName ?? ''}
+      />
+
+      <MoveDialog
+        open={moveDialogOpen}
+        onOpenChange={setMoveDialogOpen}
+        ids={effectiveIds}
+      />
     </>
   );
 }
