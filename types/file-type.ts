@@ -7,4 +7,6 @@ export type FileItem = {
   size: number;
   created_at: string;
   is_dir: boolean;
+  is_trashed: boolean;
+  original_location: string;
 };

@@ -44,7 +44,7 @@ export default function RootLayout({
         <Toaster 
           theme='dark'
           richColors
-          position='top-center'
+          position='bottom-right'
         />
       </body>
     </html>

@@ -1,4 +1,4 @@
-import { getFilesById, trashFiles } from '@/lib/data';
+import { getFileTree, restoreFiles } from '@/lib/data';
 
 export async function POST(req: Request) {
   const userId = '0';
@@ -9,10 +9,10 @@ export async function POST(req: Request) {
   }
 
   try {
-    const items = await getFilesById(ids, userId);
+    const items = await getFileTree(ids, userId);
     const allIds = items.map((i) => i.id);
     
-    await trashFiles(allIds, userId, false);
+    await restoreFiles(allIds, userId);
 
     return Response.json({ success: true });
   } catch (err) {

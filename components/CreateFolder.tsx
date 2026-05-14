@@ -24,7 +24,7 @@ export default function CreateFolder({
   currentFolderId: string;
 }) {
   const [name, setName] = useState('');
-  const [open, setOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
@@ -53,7 +53,7 @@ export default function CreateFolder({
       if (!res.ok) throw new Error();
 
       setName('');
-      setOpen(false);
+      setDialogOpen(false);
       router.refresh();
     } finally {
       setLoading(false);
@@ -62,9 +62,9 @@ export default function CreateFolder({
 
   return (
     <Dialog
-      open={open}
+      open={dialogOpen}
       onOpenChange={(isOpen) => {
-        setOpen(isOpen);
+        setDialogOpen(isOpen);
         if (isOpen) {
           setName('');
         }

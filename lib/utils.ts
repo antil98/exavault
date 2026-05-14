@@ -25,7 +25,7 @@ export function getUniqueName(name: string, existing: string[]) {
 export function buildFullPath(
   item: FileItem,
   byId: Map<string, FileItem>,
-  cache = new Map<string, string>()
+  cache = new Map<string, string>(),
 ): string {
   if (cache.has(item.id)) {
     return cache.get(item.id)!;

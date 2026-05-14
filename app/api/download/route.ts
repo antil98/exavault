@@ -1,4 +1,4 @@
-import { getFilesById } from '@/lib/data';
+import { getFileTree } from '@/lib/data';
 import { buildFullPath } from '@/lib/utils';
 import archiver from 'archiver';
 import { Readable } from 'stream';
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   if (!ids || !Array.isArray(ids)) {
     return new Response('Invalid ids', { status: 400 });
   }
-  const items = await getFilesById(ids, userId);
+  const items = await getFileTree(ids, userId);
 
   const files = items.filter((i) => !i.is_dir);
   const folders = items.filter((i) => i.is_dir);

@@ -1,4 +1,4 @@
-import { getFilesById, deleteForever } from '@/lib/data';
+import { getFileTree, deleteForever } from '@/lib/data';
 import { del } from '@vercel/blob';
 
 export async function POST(req: Request) {
@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     return new Response('Invalid ids', { status: 400 });
   }
 
-  const items = await getFilesById(ids, userId);
+  const items = await getFileTree(ids, userId);
   const allIds = items.map((i) => i.id);
 
   try {

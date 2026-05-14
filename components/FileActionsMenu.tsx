@@ -35,8 +35,19 @@ import {
   restoreFiles,
   deleteForever,
 } from '@/lib/file-actions';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function FileActionsMenu({
   menuType,
@@ -46,11 +57,12 @@ export default function FileActionsMenu({
   onSelectItem,
 }: {
   menuType: 'dropdown' | 'context';
-  fileViewPage: 'default' | 'trashed';
+  fileViewPage: 'files' | 'trash';
   ids: string[];
   children?: React.ReactNode;
   onSelectItem?: () => void;
 }) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const router = useRouter();
 
   async function handleZipDownload() {
@@ -115,8 +127,8 @@ export default function FileActionsMenu({
             >
               <EllipsisVertical />
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {fileViewPage === 'default' && (
+            <DropdownMenuContent className="w-fit">
+              {fileViewPage === 'files' ? (
                 <>
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>Options</DropdownMenuLabel>
@@ -135,13 +147,11 @@ export default function FileActionsMenu({
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleTrash}>
                       <Trash2 />
-                      Delete
+                      Move to trash
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                 </>
-              )}
-
-              {fileViewPage === 'trashed' && (
+              ) : (
                 <>
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>Options</DropdownMenuLabel>
@@ -150,9 +160,9 @@ export default function FileActionsMenu({
                       <RotateCcw />
                       Restore file(s)
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleDeleteForever}>
+                    <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)}>
                       <Trash2 />
-                      Delete permanently
+                      Delete forever
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                 </>
@@ -165,11 +175,11 @@ export default function FileActionsMenu({
       {menuType === 'context' && (
         <ContextMenu>
           <ContextMenuTrigger>{children}</ContextMenuTrigger>
-          <ContextMenuContent>
+          <ContextMenuContent className="w-fit">
             <ContextMenuGroup>
               <ContextMenuLabel>Options</ContextMenuLabel>
               <ContextMenuSeparator />
-              {fileViewPage === 'default' && (
+              {fileViewPage === 'files' ? (
                 <>
                   <ContextMenuItem onClick={handleZipDownload}>
                     <Download />
@@ -188,15 +198,13 @@ export default function FileActionsMenu({
                     Delete
                   </ContextMenuItem>
                 </>
-              )}
-
-              {fileViewPage === 'trashed' && (
+              ) : (
                 <>
                   <ContextMenuItem onClick={handleRestore}>
                     <RotateCcw />
                     Restore file(s)
                   </ContextMenuItem>
-                  <ContextMenuItem onClick={handleDeleteForever}>
+                  <ContextMenuItem onClick={() => setDeleteDialogOpen(true)}>
                     <Trash2 />
                     Delete permanently
                   </ContextMenuItem>
@@ -206,6 +214,24 @@ export default function FileActionsMenu({
           </ContextMenuContent>
         </ContextMenu>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The selected files will be permanently deleted from our servers.
+              This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteForever}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

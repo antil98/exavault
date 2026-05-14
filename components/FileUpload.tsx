@@ -64,7 +64,7 @@ export default function FileUpload({
           type="file"
           multiple
           onChange={(e) => setFiles(Array.from(e.target.files || []))}
-          className="min-w-20"
+          className="min-w-50"
         />
 
         <Button
