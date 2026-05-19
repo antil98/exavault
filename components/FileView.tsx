@@ -5,8 +5,8 @@ import { useSelection } from '@/hooks/useSelection';
 import { FileItem } from '@/types/file-type';
 import FileActionsMenu from './FileActionsMenu';
 import Link from 'next/link';
-import { Folder, File } from 'lucide-react';
-import { deleteForever, trashFiles } from '@/lib/file-actions';
+import { Folder, File, Info } from 'lucide-react';
+import { deleteForever, emptyTrash, trashFiles } from '@/lib/file-actions';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
@@ -19,6 +19,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './ui/alert-dialog';
+import BulkActions from './BulkActions';
+import { Button } from './ui/button';
 
 export default function FileView({
   filesPromise,
@@ -31,11 +33,15 @@ export default function FileView({
   const [keyboardDeleteOpen, setKeyboardDeleteOpen] = useState(false);
   const [keyboardDeleteIds, setKeyboardDeleteIds] = useState<string[]>([]);
   const [keyboardDeleting, setKeyboardDeleting] = useState(false);
+  const [emptyTrashOpen, setEmptyTrashOpen] = useState(false);
+  const [emptyTrashDeleting, setEmptyTrashDeleting] = useState(false);
   const router = useRouter();
 
   const files = use(filesPromise);
   const orderedIds = files.map((f) => f.id);
   const selectedIds = Array.from(state.selectedIds);
+
+  const isVisible = state.selectedIds.size > 0;
 
   useEffect(() => {
     async function handleDeleteKey(e: KeyboardEvent) {
@@ -97,6 +103,25 @@ export default function FileView({
     }
   }
 
+  async function handleEmptyTrash() {
+    if (emptyTrashDeleting) return;
+
+    setEmptyTrashDeleting(true);
+    const toastId = toast.loading('Emptying trash...');
+
+    try {
+      await emptyTrash();
+      toast.success('Trash emptied', { id: toastId });
+      setEmptyTrashOpen(false);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to empty trash', { id: toastId });
+    } finally {
+      setEmptyTrashDeleting(false);
+    }
+  }
+
   if (!files.length) {
     return (
       <div className="p-4">
@@ -107,13 +132,50 @@ export default function FileView({
 
   return (
     <div>
-      <div className="hidden md:block">
-        {/* HEADER */}
+      {fileViewPage === 'trash' ? (
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-md">
+          <div className="flex flex-wrap items-center gap-2 ">
+            <Info className="inline-block" />
+            <span>Trash is not automatically deleted.</span>
+          </div>
+          <Button variant="ghost" onClick={() => setEmptyTrashOpen(true)}>
+            Empty trash
+          </Button>
+        </div>
+      ) : (
+        ''
+      )}
+      <div className="h-10 my-2 flex items-center  gap-3 py-2 my-5 sm:gap-3 sm:py-0">
+        <Button
+          variant="secondary"
+          onClick={() => select('', 'toggle-all', orderedIds)}
+        >
+          {state.selectedIds.size === files.length
+            ? 'Cancel selection'
+            : 'Select all'}
+        </Button>
+        <div
+          className={`transition-all duration-300 ease-out
+            ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}
+          `}
+        >
+          {state.selectedIds.size >= 1 && (
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <span className="shrink-0 text-sm">
+                {state.selectedIds.size} file(s) selected
+              </span>
+              <BulkActions fileViewPage={fileViewPage} ids={selectedIds} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="hidden overflow-x-auto lg:block">
         <div
           className="
-      grid grid-cols-[minmax(0,1fr)_100px_100px_140px_40px]
-      gap-4 px-3 py-2 text-xs font-medium text-muted-foreground border-b
-    "
+            grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
+            gap-4 px-3 py-2 text-xs font-medium text-muted-foreground border-b
+          "
         >
           <div>Name</div>
           <div>Type</div>
@@ -124,7 +186,6 @@ export default function FileView({
           <div />
         </div>
 
-        {/* ROWS */}
         {files.map((file, i) => (
           <div key={file.id}>
             <FileActionsMenu
@@ -156,11 +217,11 @@ export default function FileView({
                   select(file.id, 'right', orderedIds);
                 }}
                 className={`
-            grid grid-cols-[minmax(0,1fr)_100px_100px_140px_40px]
-            gap-4 items-center px-3 py-3 transition
-            hover:bg-muted/50 select-none border-b
-            ${state.selectedIds.has(file.id) ? 'bg-muted' : ''}
-          `}
+                  grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
+                  gap-4 items-center px-3 py-3 transition
+                  hover:bg-muted/50 select-none border-b
+                  ${state.selectedIds.has(file.id) ? 'bg-muted' : ''}
+                `}
               >
                 {/* NAME */}
                 <div className="flex items-center gap-3 min-w-0">
@@ -186,24 +247,20 @@ export default function FileView({
                   </Link>
                 </div>
 
-                {/* TYPE */}
                 <div className="text-xs text-muted-foreground">
                   {file.is_dir ? 'Folder' : 'File'}
                 </div>
 
-                {/* SIZE */}
                 <div className="text-xs text-muted-foreground whitespace-nowrap">
                   {(file.size / 1024).toFixed(1)} KB
                 </div>
 
-                {/* DATE / LOCATION */}
                 <div className="text-xs text-muted-foreground truncate">
                   {fileViewPage === 'files'
                     ? new Date(file.created_at).toLocaleDateString()
                     : file.original_location}
                 </div>
 
-                {/* ACTIONS */}
                 <div
                   className="flex justify-end"
                   onClick={(e) => e.stopPropagation()}
@@ -224,8 +281,7 @@ export default function FileView({
         ))}
       </div>
 
-      {/* ================= MOBILE CARDS ================= */}
-      <div className="md:hidden space-y-1">
+      <div className="lg:hidden space-y-1">
         {files.map((file) => {
           const isSelected = state.selectedIds.has(file.id);
 
@@ -260,10 +316,12 @@ export default function FileView({
                     {file.name}
                   </Link>
 
-                  <div className="flex gap-3 text-xs text-muted-foreground mt-1">
+                  <div className="flex min-w-0 gap-3 text-xs text-muted-foreground mt-1">
                     <span>{file.is_dir ? 'Folder' : 'File'}</span>
-                    <span>{(file.size / 1024).toFixed(1)} KB</span>
-                    <span>
+                    <span className="shrink-0">
+                      {(file.size / 1024).toFixed(1)} KB
+                    </span>
+                    <span className="min-w-0 truncate">
                       {fileViewPage === 'files'
                         ? new Date(file.created_at).toLocaleDateString()
                         : file.original_location}
@@ -287,6 +345,29 @@ export default function FileView({
           );
         })}
       </div>
+
+      <AlertDialog open={emptyTrashOpen} onOpenChange={setEmptyTrashOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Empty trash?</AlertDialogTitle>
+            <AlertDialogDescription>
+              All files in trash will be permanently deleted from our servers.
+              This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={emptyTrashDeleting}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={emptyTrashDeleting}
+              onClick={handleEmptyTrash}
+            >
+              {emptyTrashDeleting ? 'Deleting...' : 'Continue'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog
         open={keyboardDeleteOpen}

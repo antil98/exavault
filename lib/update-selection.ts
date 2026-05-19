@@ -7,11 +7,24 @@ export function updateSelection({
   itemsOrdered,
 }: {
   id: string;
-  type: 'click' | 'right' | 'ctrl' | 'shift';
+  type: 'click' | 'right' | 'ctrl' | 'shift' | 'toggle-all';
   state: SelectionState;
   itemsOrdered: string[];
 }) {
   const newSelected = new Set(state.selectedIds);
+
+  if (type === 'toggle-all') {
+    if (state.selectedIds.size === itemsOrdered.length) {
+      newSelected.clear();
+    } else {
+      itemsOrdered.forEach((itemId) => newSelected.add(itemId));
+    }
+    
+    return {
+      selectedIds: newSelected,
+      lastSelectedId: null,
+    };
+  }
 
   if (type === 'right') {
     if (!newSelected.has(id)) {

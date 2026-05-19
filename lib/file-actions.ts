@@ -91,3 +91,13 @@ export async function deleteForever(ids: string[]) {
     throw new Error('Failed to delete permanently');
   }
 }
+
+export async function emptyTrash() {
+  const res = await fetch('/api/empty-trash', {
+    method: 'POST',
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to empty trash');
+  }
+}

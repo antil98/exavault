@@ -40,7 +40,7 @@ export default async function Breadcrumbs({
   const breadcrumbs = await getBreadcrumbs(currentFolderId, userId);
 
   return (
-    <Breadcrumb>
+    <Breadcrumb className="mx-auto">
       <BreadcrumbList>
         {breadcrumbs.map((item, index) => {
           const isLast = index === breadcrumbs.length - 1;

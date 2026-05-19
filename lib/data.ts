@@ -377,6 +377,17 @@ export async function getFilesByParent(
   return result as FileItem[];
 }
 
+export async function getTrashedFiles(ownerId: string): Promise<FileItem[]> {
+  const result = await sql`
+    SELECT *
+    FROM files
+    WHERE owner_id = ${ownerId}
+    AND is_trashed = true
+  `;
+
+  return result as FileItem[];
+}
+
 export async function getFileTree(
   ids: string[],
   ownerId: string,

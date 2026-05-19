@@ -8,6 +8,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
+  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 import { FolderOpen, LayoutDashboard, Trash2 } from 'lucide-react';
@@ -28,32 +30,33 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible='icon'>
+    <Sidebar collapsible="icon">
+      <SidebarRail />
       <SidebarHeader>
-        <div className="flex flex-row gap-2 items-center">
-          <img src="/icon.png" alt="Exavault logo" width="30"/>
-          <span className="text-xl group-data-[collapsible=icon]:hidden">
-            Exavault
-          </span>
+        <div className="flex flex-row items-center justify-between">
+          <div className="flex flex-row gap-2 items-center">
+            <img src="/icon.png" alt="Exavault logo" width="30" />
+            <span className="text-xl group-data-[collapsible=icon]:hidden">
+              Exavault
+            </span>
+          </div>
+          <div title="Collapse/Expand sidebar">
+            <SidebarTrigger />
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenu className='gap-1 p-2 select-none'>
-          <SidebarMenuItem>
-            <Link href="/dashboard" className="w-full" onClick={closeSidebar}>
-              <SidebarMenuButton className="w-full" isActive={activePath('/dashboard')}>
-                <LayoutDashboard />
-                Dashboard
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
+        <SidebarMenu className="gap-1 p-2 select-none">
           <SidebarMenuItem>
             <Link
               href="/files/2bcecc5f-089b-42b7-91fe-307ff392dea2"
               className="w-full"
               onClick={closeSidebar}
             >
-              <SidebarMenuButton className="w-full" isActive={pathname.startsWith('/files')}>
+              <SidebarMenuButton
+                className="w-full"
+                isActive={pathname.startsWith('/files')}
+              >
                 <FolderOpen />
                 My files
               </SidebarMenuButton>
@@ -65,7 +68,10 @@ export function AppSidebar() {
               className="w-full"
               onClick={closeSidebar}
             >
-              <SidebarMenuButton className="w-full" isActive={pathname.startsWith('/trash')}>
+              <SidebarMenuButton
+                className="w-full"
+                isActive={pathname.startsWith('/trash')}
+              >
                 <Trash2 />
                 Recycle bin
               </SidebarMenuButton>
