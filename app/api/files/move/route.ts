@@ -10,8 +10,6 @@ export async function POST(req: Request) {
   }
 
   try {
-    // All destination validation lives in the DB helper, including same-name
-    // conflicts and folder-cycle prevention.
     const result = await moveFiles({ ids, targetFolderId, ownerId: userId });
 
     if (!result.ok) {

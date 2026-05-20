@@ -6,7 +6,7 @@ import { ReadableStream } from 'stream/web';
 
 export async function POST(req: Request) {
   const { ids }: { ids: string[] } = await req.json();
-  const userId = '0'; // For simplicity, using a fixed ownerId. In a real app, you'd get this from the session.
+  const userId = '0';
 
   if (!ids || !Array.isArray(ids)) {
     return new Response('Invalid ids', { status: 400 });

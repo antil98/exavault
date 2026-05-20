@@ -6,8 +6,6 @@ export async function GET(req: Request) {
   const parentId = searchParams.get('parentId') || ROOT_FOLDER_ID;
 
   try {
-    // The move picker asks for one folder level at a time to match the existing
-    // parent_id based navigation model.
     const folders = await getFoldersByParent(parentId, userId);
 
     return Response.json({ folders, parentId });

@@ -7,19 +7,26 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { FolderOpen } from 'lucide-react';
 import { FileSearch } from '@/components/FileSearch';
 
-export default async function Page({
-  params,
-}: {
-  params: {
-    folderId: string;
-  };
+export default async function Page(props: {
+  params: { folderId: string };
+  searchParams?: { search?: string; page?: string };
 }) {
-  const awaitedParams = await params;
+  const pageParams = await props.params;
+  const searchParams = await props.searchParams;
 
-  const currentFolderId = awaitedParams.folderId;
-  const userId = '0'; // For simplicity, using a fixed userId. In a real app, you'd get this from the session.
+  const currentFolderId = pageParams.folderId;
+  const userId = '0';
 
-  const storedFiles = getFilesByParent(currentFolderId, userId);
+  const searchQuery = searchParams?.search || '';
+  const page = Number(searchParams?.page) || 1;
+
+  const storedFiles = getFilesByParent(
+    currentFolderId,
+    userId,
+    false,
+    searchQuery,
+    page,
+  );
 
   return (
     <div className="w-full min-h-screen bg-muted/40 p-2">

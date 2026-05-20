@@ -5,19 +5,20 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Trash2 } from 'lucide-react';
 import { FileSearch } from '@/components/FileSearch';
 
-export default async function Trash({
-  params,
-}: {
-  params: {
-    folderId: string;
-  };
+export default async function Page(props: {
+  params: { folderId: string };
+  searchParams?: { search?: string; page?: string };
 }) {
-  const awaitedParams = await params;
+  const pageParams = await props.params;
+  const searchParams = await props.searchParams;
 
-  const currentFolderId = awaitedParams.folderId;
-  const userId = '0'; // For simplicity, using a fixed userId. In a real app, you'd get this from the session.
+  const currentFolderId = pageParams.folderId;
+  const userId = '0';
 
-  const trashedFiles = getFilesByParent(currentFolderId, userId, true);
+  const searchQuery = searchParams?.search || '';
+  const page = Number(searchParams?.page) || 1;
+
+  const trashedFiles = getFilesByParent(currentFolderId, userId, true, searchQuery, page);
 
   return (
     <div className="w-full min-h-screen bg-muted/40 p-2">
@@ -29,7 +30,7 @@ export default async function Trash({
           fileViewPage="trash"
         />
       </div>
-      <div className=" space-y-6 p-4 md:p-6">
+      <div className="space-y-6 p-4 md:p-6">
         <div className="space-y-5">
           <div className="flex flex-wrap justify-between">
             <div className="flex gap-2 items-center">

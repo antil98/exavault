@@ -24,9 +24,120 @@ export async function getFileById(id: string, ownerId: string) {
   return result[0] as FileItem | undefined;
 }
 
+export async function getFilesByParent(
+  parentId: string | null,
+  ownerId: string,
+  isTrashed: boolean,
+  searchQuery: string = '',
+  page: number = 1,
+  pageSize: number = 20,
+): Promise<FileItem[]> {
+  const result = parentId
+    ? await sql`
+        SELECT * FROM files
+        WHERE parent_id = ${parentId}
+        AND owner_id = ${ownerId}
+        AND is_trashed = ${isTrashed}
+        AND lower(name) LIKE lower(${`%${searchQuery}%`})
+        ORDER BY is_dir DESC, name DESC
+        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
+      `
+    : await sql`
+        SELECT * FROM files
+        WHERE parent_id IS NULL
+        AND owner_id = ${ownerId}
+        AND is_trashed = ${isTrashed}
+        AND lower(name) LIKE lower(${`%${searchQuery}%`})
+        ORDER BY is_dir DESC, name DESC
+        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
+      `;
+
+  return result as FileItem[];
+}
+
+export async function getTrashedFiles(ownerId: string): Promise<FileItem[]> {
+  const result = await sql`
+    SELECT *
+    FROM files
+    WHERE owner_id = ${ownerId}
+    AND is_trashed = true
+  `;
+
+  return result as FileItem[];
+}
+
+export async function getFileTree(
+  ids: string[],
+  ownerId: string,
+): Promise<FileItem[]> {
+  const result = await sql`
+    WITH RECURSIVE tree AS (
+      SELECT *, ARRAY[id] AS path
+      FROM files
+      WHERE id = ANY(${ids})
+      AND owner_id = ${ownerId}
+
+      UNION ALL
+
+      SELECT f.*, t.path || f.id
+      FROM files f
+      INNER JOIN tree t 
+        ON f.parent_id = t.id
+      WHERE t.is_dir = true
+      AND f.owner_id = ${ownerId}
+      AND NOT f.id = ANY(t.path)
+    )
+    SELECT * FROM tree;
+  `;
+
+  return result as FileItem[];
+}
+
+export async function uploadFile({
+  url,
+  pathname,
+  parentId,
+  size,
+  name,
+  ownerId,
+}: {
+  url: string;
+  pathname: string;
+  parentId: string | null;
+  size: number;
+  name: string;
+  ownerId: string;
+}) {
+  const existingFile = await getAllFiles(parentId, ownerId);
+  const existingNames = existingFile.map((file) => file.name);
+  const finalName = getUniqueName(name, existingNames);
+
+  await sql`
+    INSERT INTO files (
+      name,
+      parent_id,
+      owner_id,
+      is_dir,
+      url,
+      pathname,
+      size
+    )
+    VALUES (
+      ${finalName},
+      ${parentId},
+      ${ownerId},
+      false,
+      ${url},
+      ${pathname},
+      ${size}
+    )
+  `;
+}
+
 export async function getFoldersByParent(
   parentId: string | null,
   ownerId: string,
+  searchQuery: string = '',
 ): Promise<FileItem[]> {
   const result = parentId
     ? await sql`
@@ -36,6 +147,7 @@ export async function getFoldersByParent(
         AND owner_id = ${ownerId}
         AND is_dir = true
         AND is_trashed = false
+        AND lower(name) LIKE lower(${`%${searchQuery}%`})
         ORDER BY name ASC
       `
     : await sql`
@@ -45,6 +157,7 @@ export async function getFoldersByParent(
         AND owner_id = ${ownerId}
         AND is_dir = true
         AND is_trashed = false
+        AND lower(name) LIKE lower(${`%${searchQuery}%`})
         ORDER BY name ASC
       `;
 
@@ -157,8 +270,6 @@ export async function renameFile({
     return { ok: false as const, status: 400, message: 'Invalid name' };
   }
 
-  // Rename uses a global owner-level conflict check because the UI now treats
-  // file names as unique across the whole account, not just inside one folder.
   const hasConflict = await nameExistsForOwner({
     name: trimmedName,
     ownerId,
@@ -284,8 +395,6 @@ export async function moveFiles({
       }
     }
 
-    // Moving follows the same strict duplicate-name rule as rename so users do
-    // not accidentally hide an existing file behind an auto-generated suffix.
     const hasConflict = await nameExistsInFolder({
       name: item.name,
       parentId: targetFolderId,
@@ -310,109 +419,6 @@ export async function moveFiles({
   `;
 
   return { ok: true as const };
-}
-
-export async function uploadFile({
-  url,
-  pathname,
-  parentId,
-  size,
-  name,
-  ownerId,
-}: {
-  url: string;
-  pathname: string;
-  parentId: string | null;
-  size: number;
-  name: string;
-  ownerId: string;
-}) {
-  const existingFile = await getAllFiles(parentId, ownerId);
-  const existingNames = existingFile.map((file) => file.name);
-  const finalName = getUniqueName(name, existingNames);
-
-  await sql`
-    INSERT INTO files (
-      name,
-      parent_id,
-      owner_id,
-      is_dir,
-      url,
-      pathname,
-      size
-    )
-    VALUES (
-      ${finalName},
-      ${parentId},
-      ${ownerId},
-      false,
-      ${url},
-      ${pathname},
-      ${size}
-    )
-  `;
-}
-
-export async function getFilesByParent(
-  parentId: string | null,
-  ownerId: string,
-  isTrashed: boolean = false,
-): Promise<FileItem[]> {
-  const result = parentId
-    ? await sql`
-        SELECT * FROM files
-        WHERE parent_id = ${parentId}
-        AND owner_id = ${ownerId}
-        AND is_trashed = ${isTrashed}
-        ORDER BY is_dir DESC, name DESC
-      `
-    : await sql`
-        SELECT * FROM files
-        WHERE parent_id IS NULL
-        AND owner_id = ${ownerId}
-        AND is_trashed = ${isTrashed}
-        ORDER BY is_dir DESC, name DESC
-      `;
-
-  return result as FileItem[];
-}
-
-export async function getTrashedFiles(ownerId: string): Promise<FileItem[]> {
-  const result = await sql`
-    SELECT *
-    FROM files
-    WHERE owner_id = ${ownerId}
-    AND is_trashed = true
-  `;
-
-  return result as FileItem[];
-}
-
-export async function getFileTree(
-  ids: string[],
-  ownerId: string,
-): Promise<FileItem[]> {
-  const result = await sql`
-    WITH RECURSIVE tree AS (
-      SELECT *, ARRAY[id] AS path
-      FROM files
-      WHERE id = ANY(${ids})
-      AND owner_id = ${ownerId}
-
-      UNION ALL
-
-      SELECT f.*, t.path || f.id
-      FROM files f
-      INNER JOIN tree t 
-        ON f.parent_id = t.id
-      WHERE t.is_dir = true
-      AND f.owner_id = ${ownerId}
-      AND NOT f.id = ANY(t.path)
-    )
-    SELECT * FROM tree;
-  `;
-
-  return result as FileItem[];
 }
 
 export async function trashFiles(ids: string[], ownerId: string) {

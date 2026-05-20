@@ -9,7 +9,6 @@ export async function POST(req: Request) {
   }
 
   try {
-    // The helper owns name-conflict validation so API and UI stay in sync.
     const result = await renameFile({ id, newName, ownerId: userId });
 
     if (!result.ok) {

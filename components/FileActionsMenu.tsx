@@ -72,8 +72,6 @@ export default function FileActionsMenu({
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const router = useRouter();
-  // If the row is not selected yet, menu actions should operate on that row
-  // instead of an older selection from elsewhere in the list.
   const effectiveIds =
     primaryId && (!isPrimarySelected || !ids.length) ? [primaryId] : ids;
   const canRename = fileViewPage === 'files' && effectiveIds.length === 1;

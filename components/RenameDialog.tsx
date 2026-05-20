@@ -38,8 +38,6 @@ export default function RenameDialog({
   useEffect(() => {
     if (!open) return;
 
-    // Reset every time the modal opens so a previous conflict does not leak
-    // into the next rename attempt.
     setName(currentName);
     setError('');
   }, [currentName, open]);
@@ -64,7 +62,6 @@ export default function RenameDialog({
       onOpenChange(false);
       router.refresh();
     } catch (err) {
-      // Server conflict messages land here and drive aria-invalid on the input.
       setError(err instanceof Error ? err.message : 'Rename failed');
     } finally {
       setLoading(false);

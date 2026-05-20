@@ -2,7 +2,7 @@ import { getFileTree, deleteForever } from '@/lib/data';
 import { del } from '@vercel/blob';
 
 export async function POST(req: Request) {
-  const userId = '0'; // same as your other routes
+  const userId = '0';
   const { ids } = await req.json();
 
   if (!ids || !Array.isArray(ids)) {

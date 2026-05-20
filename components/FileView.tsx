@@ -58,15 +58,11 @@ export default function FileView({
       e.preventDefault();
 
       try {
-        // The keyboard shortcut mirrors the visible menu action for each page:
-        // files go to trash, while trash items are permanently deleted.
         if (fileViewPage === 'files') {
           await trashFiles(selectedIds);
           toast.success('File(s) moved to trash');
           router.refresh();
         } else {
-          // Permanent deletes still need confirmation, so store the exact
-          // selected ids from the moment the Delete key was pressed.
           setKeyboardDeleteIds(selectedIds);
           setKeyboardDeleteOpen(true);
         }
@@ -122,14 +118,6 @@ export default function FileView({
     }
   }
 
-  if (!files.length) {
-    return (
-      <div className="p-4">
-        <p className="text-gray-600">The folder is empty</p>
-      </div>
-    );
-  }
-
   return (
     <div>
       {fileViewPage === 'trash' ? (
@@ -145,255 +133,263 @@ export default function FileView({
       ) : (
         ''
       )}
-      <div className="h-10 my-2 flex items-center  gap-3 py-2 my-5 sm:gap-3 sm:py-0">
-        <Button
-          variant="secondary"
-          onClick={() => select('', 'toggle-all', orderedIds)}
-        >
-          {state.selectedIds.size === files.length
-            ? 'Cancel selection'
-            : 'Select all'}
-        </Button>
-        <div
-          className={`transition-all duration-300 ease-out
+
+      {files.length === 0 ? (
+        <div className="p-30 text-center">
+          <p className="text-gray-600">The folder is empty</p>
+        </div>
+      ) : (
+        <>
+          <div className="h-10 my-2 flex items-center  gap-3 py-2 my-5 sm:gap-3 sm:py-0">
+            <Button
+              variant="secondary"
+              onClick={() => select('', 'toggle-all', orderedIds)}
+            >
+              {state.selectedIds.size === files.length
+                ? 'Cancel selection'
+                : 'Select all'}
+            </Button>
+            <div
+              className={`transition-all duration-300 ease-out
             ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}
           `}
-        >
-          {state.selectedIds.size >= 1 && (
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <span className="shrink-0 text-sm">
-                {state.selectedIds.size} file(s) selected
-              </span>
-              <BulkActions fileViewPage={fileViewPage} ids={selectedIds} />
+            >
+              {state.selectedIds.size >= 1 && (
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <span className="shrink-0 text-sm">
+                    {state.selectedIds.size} file(s) selected
+                  </span>
+                  <BulkActions fileViewPage={fileViewPage} ids={selectedIds} />
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      <div className="hidden overflow-x-auto lg:block">
-        <div
-          className="
+          <div className="hidden overflow-x-auto lg:block">
+            <div
+              className="
             grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
             gap-4 px-3 py-2 text-xs font-medium text-muted-foreground border-b
           "
-        >
-          <div>Name</div>
-          <div>Type</div>
-          <div>Size</div>
-          <div>
-            {fileViewPage === 'files' ? 'Uploaded at' : 'Original location'}
-          </div>
-          <div />
-        </div>
-
-        {files.map((file, i) => (
-          <div key={file.id}>
-            <FileActionsMenu
-              menuType="context"
-              fileViewPage={fileViewPage}
-              ids={selectedIds}
-              // The menu receives row metadata so unselected-row actions still
-              // target the row that opened the menu.
-              primaryId={file.id}
-              primaryName={file.name}
-              isPrimarySelected={state.selectedIds.has(file.id)}
             >
-              <div
-                title={file.name}
-                onClick={(e) => {
-                  if (e.shiftKey) {
-                    select(file.id, 'shift', orderedIds);
-                  } else if (e.ctrlKey || e.metaKey) {
-                    select(file.id, 'ctrl', orderedIds);
-                  } else {
-                    select(file.id, 'click', orderedIds);
-                  }
-                }}
-                onContextMenu={() => {
-                  if (!state.selectedIds.has(file.id)) {
-                    select(file.id, 'click', orderedIds);
-                  }
-
-                  select(file.id, 'right', orderedIds);
-                }}
-                className={`
-                  grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
-                  gap-4 items-center px-3 py-3 transition
-                  hover:bg-muted/50 select-none border-b
-                  ${state.selectedIds.has(file.id) ? 'bg-muted' : ''}
-                `}
-              >
-                {/* NAME */}
-                <div className="flex items-center gap-3 min-w-0">
-                  {file.is_dir ? (
-                    <Folder className="w-4 h-4 shrink-0" />
-                  ) : (
-                    <File className="w-4 h-4 shrink-0" />
-                  )}
-
-                  <Link
-                    href={
-                      file.is_dir ? `/${fileViewPage}/${file.id}` : file.url
-                    }
-                    target={file.is_dir ? '_self' : '_blank'}
-                    title={file.name}
-                    onClick={(e) => e.stopPropagation()}
-                    className="
-                      truncate min-w-0 overflow-hidden
-                      text-sm font-medium hover:underline
-                    "
-                  >
-                    {file.name}
-                  </Link>
-                </div>
-
-                <div className="text-xs text-muted-foreground">
-                  {file.is_dir ? 'Folder' : 'File'}
-                </div>
-
-                <div className="text-xs text-muted-foreground whitespace-nowrap">
-                  {(file.size / 1024).toFixed(1)} KB
-                </div>
-
-                <div className="text-xs text-muted-foreground truncate">
-                  {fileViewPage === 'files'
-                    ? new Date(file.created_at).toLocaleDateString()
-                    : file.original_location}
-                </div>
-
-                <div
-                  className="flex justify-end"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <FileActionsMenu
-                    menuType="dropdown"
-                    fileViewPage={fileViewPage}
-                    ids={selectedIds}
-                    primaryId={file.id}
-                    primaryName={file.name}
-                    isPrimarySelected={state.selectedIds.has(file.id)}
-                    onSelectItem={() => select(file.id, 'click', orderedIds)}
-                  />
-                </div>
+              <div>Name</div>
+              <div>Type</div>
+              <div>Size</div>
+              <div>
+                {fileViewPage === 'files' ? 'Uploaded at' : 'Original location'}
               </div>
-            </FileActionsMenu>
-          </div>
-        ))}
-      </div>
+              <div />
+            </div>
 
-      <div className="lg:hidden space-y-1">
-        {files.map((file) => {
-          const isSelected = state.selectedIds.has(file.id);
-
-          return (
-            <div
-              key={file.id}
-              onClick={() => {
-                select(file.id, 'ctrl', orderedIds);
-              }}
-              onContextMenu={() => select(file.id, 'right', orderedIds)}
-              className={`flex items-start justify-between pl-3 py-3 rounded-md bg-background/50 ${
-                isSelected ? 'bg-muted' : ''
-              }`}
-            >
-              <div className="flex items-start gap-3 min-w-0">
-                {file.is_dir ? (
-                  <Folder className="w-4 h-4 shrink-0 mt-1" />
-                ) : (
-                  <File className="w-4 h-4 shrink-0 mt-1" />
-                )}
-
-                <div className="flex flex-col min-w-0">
-                  <Link
-                    href={
-                      file.is_dir ? `/${fileViewPage}/${file.id}` : file.url
-                    }
-                    target={file.is_dir ? '_self' : '_blank'}
-                    onClick={(e) => e.stopPropagation()}
-                    className="font-medium truncate hover:underline"
-                    title={file.name}
-                  >
-                    {file.name}
-                  </Link>
-
-                  <div className="flex min-w-0 gap-3 text-xs text-muted-foreground mt-1">
-                    <span>{file.is_dir ? 'Folder' : 'File'}</span>
-                    <span className="shrink-0">
-                      {(file.size / 1024).toFixed(1)} KB
-                    </span>
-                    <span className="min-w-0 truncate">
-                      {fileViewPage === 'files'
-                        ? new Date(file.created_at).toLocaleDateString()
-                        : file.original_location}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div onClick={(e) => e.stopPropagation()}>
+            {files.map((file, i) => (
+              <div key={file.id}>
                 <FileActionsMenu
-                  menuType="dropdown"
+                  menuType="context"
                   fileViewPage={fileViewPage}
                   ids={selectedIds}
                   primaryId={file.id}
                   primaryName={file.name}
                   isPrimarySelected={state.selectedIds.has(file.id)}
-                  onSelectItem={() => select(file.id, 'click', orderedIds)}
-                />
+                >
+                  <div
+                    title={file.name}
+                    onClick={(e) => {
+                      if (e.shiftKey) {
+                        select(file.id, 'shift', orderedIds);
+                      } else if (e.ctrlKey || e.metaKey) {
+                        select(file.id, 'ctrl', orderedIds);
+                      } else {
+                        select(file.id, 'click', orderedIds);
+                      }
+                    }}
+                    onContextMenu={() => {
+                      if (!state.selectedIds.has(file.id)) {
+                        select(file.id, 'click', orderedIds);
+                      }
+
+                      select(file.id, 'right', orderedIds);
+                    }}
+                    className={`
+                  grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
+                  gap-4 items-center px-3 py-3 transition
+                  hover:bg-muted/50 select-none border-b
+                  ${state.selectedIds.has(file.id) ? 'bg-muted' : ''}
+                `}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      {file.is_dir ? (
+                        <Folder className="w-4 h-4 shrink-0" />
+                      ) : (
+                        <File className="w-4 h-4 shrink-0" />
+                      )}
+
+                      <Link
+                        href={
+                          file.is_dir ? `/${fileViewPage}/${file.id}` : file.url
+                        }
+                        target={file.is_dir ? '_self' : '_blank'}
+                        title={file.name}
+                        onClick={(e) => e.stopPropagation()}
+                        className="
+                      truncate min-w-0 overflow-hidden
+                      text-sm font-medium hover:underline
+                    "
+                      >
+                        {file.name}
+                      </Link>
+                    </div>
+
+                    <div className="text-xs text-muted-foreground">
+                      {file.is_dir ? 'Folder' : 'File'}
+                    </div>
+
+                    <div className="text-xs text-muted-foreground whitespace-nowrap">
+                      {(file.size / 1024).toFixed(1)} KB
+                    </div>
+
+                    <div className="text-xs text-muted-foreground truncate">
+                      {fileViewPage === 'files'
+                        ? new Date(file.created_at).toLocaleDateString()
+                        : file.original_location}
+                    </div>
+
+                    <div
+                      className="flex justify-end"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <FileActionsMenu
+                        menuType="dropdown"
+                        fileViewPage={fileViewPage}
+                        ids={selectedIds}
+                        primaryId={file.id}
+                        primaryName={file.name}
+                        isPrimarySelected={state.selectedIds.has(file.id)}
+                        onSelectItem={() =>
+                          select(file.id, 'click', orderedIds)
+                        }
+                      />
+                    </div>
+                  </div>
+                </FileActionsMenu>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            ))}
+          </div>
 
-      <AlertDialog open={emptyTrashOpen} onOpenChange={setEmptyTrashOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Empty trash?</AlertDialogTitle>
-            <AlertDialogDescription>
-              All files in trash will be permanently deleted from our servers.
-              This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={emptyTrashDeleting}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={emptyTrashDeleting}
-              onClick={handleEmptyTrash}
-            >
-              {emptyTrashDeleting ? 'Deleting...' : 'Continue'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          <div className="lg:hidden space-y-1">
+            {files.map((file) => {
+              const isSelected = state.selectedIds.has(file.id);
 
-      <AlertDialog
-        open={keyboardDeleteOpen}
-        onOpenChange={setKeyboardDeleteOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              The selected files will be permanently deleted from our servers.
-              This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={keyboardDeleting}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={keyboardDeleting}
-              onClick={handleKeyboardDeleteForever}
-            >
-              {keyboardDeleting ? 'Deleting...' : 'Continue'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              return (
+                <div
+                  key={file.id}
+                  onClick={() => {
+                    select(file.id, 'ctrl', orderedIds);
+                  }}
+                  onContextMenu={() => select(file.id, 'right', orderedIds)}
+                  className={`flex items-start justify-between pl-3 py-3 rounded-md bg-background/50 ${
+                    isSelected ? 'bg-muted' : ''
+                  }`}
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    {file.is_dir ? (
+                      <Folder className="w-4 h-4 shrink-0 mt-1" />
+                    ) : (
+                      <File className="w-4 h-4 shrink-0 mt-1" />
+                    )}
+
+                    <div className="flex flex-col min-w-0">
+                      <Link
+                        href={
+                          file.is_dir ? `/${fileViewPage}/${file.id}` : file.url
+                        }
+                        target={file.is_dir ? '_self' : '_blank'}
+                        onClick={(e) => e.stopPropagation()}
+                        className="font-medium truncate hover:underline"
+                        title={file.name}
+                      >
+                        {file.name}
+                      </Link>
+
+                      <div className="flex min-w-0 gap-3 text-xs text-muted-foreground mt-1">
+                        <span>{file.is_dir ? 'Folder' : 'File'}</span>
+                        <span className="shrink-0">
+                          {(file.size / 1024).toFixed(1)} KB
+                        </span>
+                        <span className="min-w-0 truncate">
+                          {fileViewPage === 'files'
+                            ? new Date(file.created_at).toLocaleDateString()
+                            : file.original_location}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <FileActionsMenu
+                      menuType="dropdown"
+                      fileViewPage={fileViewPage}
+                      ids={selectedIds}
+                      primaryId={file.id}
+                      primaryName={file.name}
+                      isPrimarySelected={state.selectedIds.has(file.id)}
+                      onSelectItem={() => select(file.id, 'click', orderedIds)}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <AlertDialog open={emptyTrashOpen} onOpenChange={setEmptyTrashOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Empty trash?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  All files in trash will be permanently deleted from our
+                  servers. This cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={emptyTrashDeleting}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={emptyTrashDeleting}
+                  onClick={handleEmptyTrash}
+                >
+                  {emptyTrashDeleting ? 'Deleting...' : 'Continue'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <AlertDialog
+            open={keyboardDeleteOpen}
+            onOpenChange={setKeyboardDeleteOpen}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  The selected files will be permanently deleted from our
+                  servers. This cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={keyboardDeleting}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={keyboardDeleting}
+                  onClick={handleKeyboardDeleteForever}
+                >
+                  {keyboardDeleting ? 'Deleting...' : 'Continue'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
+      )}
     </div>
   );
 }

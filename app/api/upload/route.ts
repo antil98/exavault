@@ -3,7 +3,7 @@ import { uploadFile } from '../../../lib/data';
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const userId = '0'; // Default userId for testing
+  const userId = '0';
 
   try {
     const jsonResponse = await handleUpload({
@@ -12,12 +12,10 @@ export async function POST(req: Request) {
       onBeforeGenerateToken: async (pathname, clientPayload) => {
         return {
           allowedContentTypes: [
-            // Multimedia
             'image/*',
             'video/*',
             'audio/*',
 
-            // Text and Documents
             'text/plain',
             'text/markdown',
             'application/json',
@@ -30,7 +28,6 @@ export async function POST(req: Request) {
             'application/vnd.ms-powerpoint',
             'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 
-            // Archives
             'application/zip',
             'application/x-rar-compressed',
             'application/x-7z-compressed',

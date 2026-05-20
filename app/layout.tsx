@@ -37,6 +37,7 @@ export default function RootLayout({
         geistMono.variable,
         'font-sans',
         inter.variable,
+        'scrollbar-gutter-stable',
       )}
     >
       <body className="min-h-full flex flex-col">

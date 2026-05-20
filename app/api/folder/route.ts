@@ -2,7 +2,7 @@ import { sql } from '@/lib/db';
 import { getUniqueName } from '@/lib/utils';
 
 export async function POST(req: Request) {
-  const userId = '0'; // Default userId for testing
+  const userId = '0';
 
   const body = await req.json();
   const { name, parentId } = body;

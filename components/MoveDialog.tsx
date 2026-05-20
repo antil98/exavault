@@ -41,7 +41,6 @@ export default function MoveDialog({
   useEffect(() => {
     if (!open) return;
 
-    // Start every move from the app root so the picker is predictable.
     setCurrentFolderId(ROOT_FOLDER_ID);
     setFolderPath([{ id: ROOT_FOLDER_ID, name: 'Home' }]);
     setSelectedFolderId(ROOT_FOLDER_ID);
@@ -83,8 +82,6 @@ export default function MoveDialog({
       onOpenChange(false);
       router.refresh();
     } catch (err) {
-      // The API returns folder-cycle and duplicate-name conflicts as messages
-      // that can be corrected by picking another destination.
       setError(err instanceof Error ? err.message : 'Move failed');
     } finally {
       setMoving(false);
@@ -162,14 +159,9 @@ export default function MoveDialog({
                         type="button"
                         disabled={isSelectedItem}
                         onClick={() => {
-                          // Click once to select the destination without
-                          // navigating into the folder.
                           setSelectedFolderId(folder.id);
                         }}
                         onDoubleClick={() => {
-                          // Double click mirrors common file-browser behavior,
-                          // while the Open button remains available for keyboard
-                          // and assistive-technology users.
                           if (!isSelectedItem) {
                             openFolder(folder);
                           }
