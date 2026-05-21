@@ -21,7 +21,7 @@ export default async function Page(props: {
   const trashedFiles = getFilesByParent(currentFolderId, userId, true, searchQuery, page);
 
   return (
-    <div className="w-full min-h-screen bg-muted/40 p-2">
+    <div className="w-full min-h-screen p-2">
       <div className="flex items-center justify-between">
         <SidebarTrigger className="md:hidden" />
         <Breadcrumbs

@@ -1,11 +1,12 @@
 import FileUpload from '@/components/FileUpload';
 import FileView from '@/components/FileView';
 import CreateFolder from '@/components/CreateFolder';
-import { getFilesByParent } from '@/lib/data';
+import { getFilesByParent, getTotalPages } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { FolderOpen } from 'lucide-react';
 import { FileSearch } from '@/components/FileSearch';
+import FilePagination from '@/components/FilePagination';
 
 export default async function Page(props: {
   params: { folderId: string };
@@ -27,9 +28,10 @@ export default async function Page(props: {
     searchQuery,
     page,
   );
+  const totalPages = await getTotalPages(currentFolderId, userId, false, searchQuery);
 
   return (
-    <div className="w-full min-h-screen bg-muted/40 p-2">
+    <div className="w-full min-h-screen p-2">
       <div className="flex items-center justify-between">
         <SidebarTrigger className="md:hidden" />
         <Breadcrumbs
@@ -55,6 +57,8 @@ export default async function Page(props: {
         </div>
 
         <FileView filesPromise={storedFiles} fileViewPage="files" />
+
+        <FilePagination currentPage={page} totalPages={totalPages} />
       </div>
     </div>
   );

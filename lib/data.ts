@@ -472,3 +472,32 @@ export async function deleteForever(ids: string[], ownerId: string) {
     AND owner_id = ${ownerId}
   `;
 }
+
+export async function getTotalPages(
+  parentId: string | null,
+  ownerId: string,
+  isTrashed: boolean,
+  searchQuery: string = '',
+) {
+  const result = parentId
+    ? await sql`
+        SELECT COUNT(*) AS count
+        FROM files
+        WHERE parent_id = ${parentId}
+        AND owner_id = ${ownerId}
+        AND is_trashed = ${isTrashed}
+        AND lower(name) LIKE lower(${`%${searchQuery}%`})
+      `
+    : await sql`
+        SELECT COUNT(*) AS count
+        FROM files
+        WHERE parent_id IS NULL
+        AND owner_id = ${ownerId}
+        AND is_trashed = ${isTrashed}
+        AND lower(name) LIKE lower(${`%${searchQuery}%`})
+      `;
+
+  const totalCount = Number(result[0]?.count || 0);
+  const pageSize = 20;
+  return Math.ceil(totalCount / pageSize);
+}

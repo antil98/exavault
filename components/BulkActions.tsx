@@ -133,7 +133,7 @@ export default function BulkActions({
             ) : (
               <Download />
             )}
-            <span className="hidden sm:inline">Download</span>
+            <span className="hidden lg:inline">Download</span>
           </Button>
           <Button
             variant="outline"
@@ -144,7 +144,7 @@ export default function BulkActions({
             onClick={() => setMoveDialogOpen(true)}
           >
             <Move />
-            <span className="hidden sm:inline">Move to...</span>
+            <span className="hidden lg:inline">Move to...</span>
           </Button>
           <Button
             variant="destructive"
@@ -159,7 +159,7 @@ export default function BulkActions({
             ) : (
               <Trash2 />
             )}
-            <span className="hidden sm:inline">Move to trash</span>
+            <span className="hidden lg:inline">Move to trash</span>
           </Button>
         </div>
       ) : (
@@ -177,7 +177,7 @@ export default function BulkActions({
             ) : (
               <RotateCcw />
             )}
-            <span className="hidden sm:inline">Restore file(s)</span>
+            <span className="hidden lg:inline">Restore file(s)</span>
           </Button>
           <Button
             variant="destructive"
@@ -188,7 +188,7 @@ export default function BulkActions({
             onClick={() => setDeleteDialogOpen(true)}
           >
             <Trash2 />
-            <span className="hidden sm:inline">Delete permanently</span>
+            <span className="hidden lg:inline">Delete permanently</span>
           </Button>
         </div>
       )}
