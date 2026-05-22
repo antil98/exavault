@@ -1,23 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { type ChangeEvent, useRef, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { LoaderCircle, Upload } from 'lucide-react';
+import { SidebarMenuButton } from './ui/sidebar';
 
 export default function FileUpload({
   currentFolderId,
+  buttonLabel = 'Select files',
+  successMessage = 'Files uploaded successfully!',
 }: {
   currentFolderId: string;
+  buttonLabel?: string;
+  successMessage?: string;
 }) {
-  const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  async function handleUpload() {
-    if (files.length === 0) return;
+  function handleClick() {
+    if (uploading) return;
+
+    inputRef.current?.click();
+  }
+
+  async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    await handleUpload(Array.from(e.currentTarget.files || []));
+  }
+
+  async function handleUpload(selectedFiles: File[]) {
+    if (selectedFiles.length === 0 || uploading) return;
 
     setUploading(true);
 
@@ -25,7 +39,7 @@ export default function FileUpload({
 
     try {
       await Promise.all(
-        files.map((file) => {
+        selectedFiles.map((file) => {
           const pathname = `${currentFolderId}/${file.name}`;
 
           return upload(pathname, file, {
@@ -40,7 +54,7 @@ export default function FileUpload({
         }),
       );
 
-      toast.success('Files uploaded successfully!', {
+      toast.success(successMessage, {
         id: uploadToast,
       });
 
@@ -54,25 +68,33 @@ export default function FileUpload({
       });
     } finally {
       setUploading(false);
+      if (inputRef.current) {
+        inputRef.current.value = '';
+      }
     }
   }
 
   return (
-    <div>
-      <div className="flex items-center gap-3">
-        <Input
-          type="file"
-          multiple
-          onChange={(e) => setFiles(Array.from(e.target.files || []))}
-        />
+    <>
+      <SidebarMenuButton
+        tooltip={uploading ? 'Uploading...' : buttonLabel}
+        onClick={handleClick}
+        disabled={uploading}
+        className="h-10 gap-2.5 rounded-lg border border-sidebar-border/80 bg-background/80 px-3 font-medium shadow-xs hover:bg-background hover:shadow-sm group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-2! group-data-[collapsible=icon]:shadow-none [&>svg]:text-primary"
+      >
+        {uploading ? <LoaderCircle className="animate-spin" /> : <Upload />}
+        <span className="group-data-[collapsible=icon]:hidden">
+          {uploading ? 'Uploading...' : buttonLabel}
+        </span>
+      </SidebarMenuButton>
 
-        <Button
-          onClick={handleUpload}
-          disabled={uploading || files.length === 0}
-        >
-          Upload
-        </Button>
-      </div>
-    </div>
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        className="sr-only"
+        onChange={handleFileChange}
+      />
+    </>
   );
 }

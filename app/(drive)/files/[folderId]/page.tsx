@@ -1,6 +1,4 @@
-import FileUpload from '@/components/FileUpload';
 import FileView from '@/components/FileView';
-import CreateFolder from '@/components/CreateFolder';
 import { getFilesByParent, getTotalPages } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -49,11 +47,6 @@ export default async function Page(props: {
             </div>
             <FileSearch />
           </div>
-        </div>
-
-        <div className="flex items-center gap-4 justify-center flex-wrap">
-          <FileUpload currentFolderId={currentFolderId} />
-          <CreateFolder currentFolderId={currentFolderId} />
         </div>
 
         <FileView filesPromise={storedFiles} fileViewPage="files" />

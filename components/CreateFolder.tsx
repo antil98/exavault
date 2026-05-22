@@ -17,11 +17,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoaderCircle } from 'lucide-react';
 import { Plus } from 'lucide-react';
+import { SidebarMenuButton } from './ui/sidebar';
 
 export default function CreateFolder({
   currentFolderId,
+  buttonLabel = 'New folder',
 }: {
   currentFolderId: string;
+  buttonLabel?: string;
 }) {
   const [name, setName] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -72,10 +75,15 @@ export default function CreateFolder({
     >
       <DialogTrigger
         render={
-          <Button variant="secondary">
-            <Plus className="h-4 w-4" />
-            New Folder
-          </Button>
+          <SidebarMenuButton
+            tooltip={buttonLabel}
+            className="h-10 gap-2.5 rounded-lg border border-dashed border-sidebar-border/90 bg-sidebar-accent/40 px-3 font-medium hover:bg-sidebar-accent group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-2! "
+          >
+            <Plus />
+            <span className="group-data-[collapsible=icon]:hidden">
+              {buttonLabel}
+            </span>
+          </SidebarMenuButton>
         }
       />
 
