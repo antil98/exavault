@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { LoaderCircle } from 'lucide-react';
 import { Plus } from 'lucide-react';
 import { SidebarMenuButton } from './ui/sidebar';
+import { createFolderAction } from '@/app/actions/files';
 
 export default function CreateFolder({
   currentFolderId,
@@ -42,18 +43,9 @@ export default function CreateFolder({
     setLoading(true);
 
     try {
-      const res = await fetch('/api/folder', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name,
-          parentId,
-        }),
-      });
+      const result = await createFolderAction(name, parentId);
 
-      if (!res.ok) throw new Error();
+      if (!result.ok) throw new Error(result.message);
 
       setName('');
       setDialogOpen(false);

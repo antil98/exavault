@@ -57,7 +57,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup className="gap-2 px-2 py-3 group-data-[collapsible=icon]:py-2">
+        <SidebarGroup className="px-2 py-3 group-data-[collapsible=icon]:py-2">
           <SidebarGroupLabel>Actions</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2 select-none">

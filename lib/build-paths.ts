@@ -1,6 +1,6 @@
 import { FileItem } from '@/types/file-type';
 
-export default function buildFullPath(
+export function buildFullPath(
   item: FileItem,
   byId: Map<string, FileItem>,
   cache = new Map<string, string>(),

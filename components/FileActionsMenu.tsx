@@ -27,12 +27,12 @@ import {
   EllipsisVertical,
   RotateCcw,
 } from 'lucide-react';
+import { downloadFiles } from '@/lib/download-files';
 import {
-  downloadFiles,
-  trashFiles,
-  restoreFiles,
-  deleteForever,
-} from '@/lib/file-actions';
+  deleteForeverAction,
+  restoreFilesAction,
+  trashFilesAction,
+} from '@/app/actions/files';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,7 +55,9 @@ export default function FileActionsMenu({
   ids,
   primaryId,
   primaryName,
+  primaryIsDir,
   isPrimarySelected = false,
+  downloadsAsArchive,
   children,
   onSelectItem,
 }: {
@@ -64,7 +66,9 @@ export default function FileActionsMenu({
   ids: string[];
   primaryId?: string;
   primaryName?: string;
+  primaryIsDir?: boolean;
   isPrimarySelected?: boolean;
+  downloadsAsArchive: boolean;
   children?: React.ReactNode;
   onSelectItem?: () => void;
 }) {
@@ -76,31 +80,47 @@ export default function FileActionsMenu({
     primaryId && (!isPrimarySelected || !ids.length) ? [primaryId] : ids;
   const canRename = fileViewPage === 'files' && effectiveIds.length === 1;
 
-  async function handleZipDownload() {
-    const zipToast = toast.loading(`Zipping ${effectiveIds.length} file(s)...`);
+  async function handleDownload() {
+    const downloadToast = toast.loading(
+      downloadsAsArchive
+        ? `Zipping ${effectiveIds.length} item(s)...`
+        : 'Preparing download...',
+    );
 
     try {
       await downloadFiles(effectiveIds);
       toast.success('Download ready', {
-        id: zipToast,
+        id: downloadToast,
       });
     } catch (err) {
-      console.error('ZIP failed:', err);
+      console.error('Download failed:', err);
 
-      toast.error('Failed to create ZIP', {
-        id: zipToast,
+      toast.error('Download failed', {
+        id: downloadToast,
       });
     }
   }
 
   async function handleTrash() {
-    await trashFiles(effectiveIds);
+    const result = await trashFilesAction(effectiveIds);
+
+    if (!result.ok) {
+      toast.error(result.message);
+      return;
+    }
+
     toast.success('File(s) moved to trash');
     router.refresh();
   }
 
   async function handleRestore() {
-    await restoreFiles(effectiveIds);
+    const result = await restoreFilesAction(effectiveIds);
+
+    if (!result.ok) {
+      toast.error(result.message);
+      return;
+    }
+
     toast.success('File(s) restored');
     router.refresh();
   }
@@ -109,7 +129,11 @@ export default function FileActionsMenu({
     const toastId = toast.loading('Deleting permanently...');
 
     try {
-      await deleteForever(effectiveIds);
+      const result = await deleteForeverAction(effectiveIds);
+
+      if (!result.ok) {
+        throw new Error(result.message);
+      }
 
       toast.success('Deleted permanently', { id: toastId });
       router.refresh();
@@ -144,7 +168,7 @@ export default function FileActionsMenu({
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>Options</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleZipDownload}>
+                    <DropdownMenuItem onClick={handleDownload}>
                       <Download />
                       Download
                     </DropdownMenuItem>
@@ -195,7 +219,7 @@ export default function FileActionsMenu({
               <ContextMenuSeparator />
               {fileViewPage === 'files' ? (
                 <>
-                  <ContextMenuItem onClick={handleZipDownload}>
+                  <ContextMenuItem onClick={handleDownload}>
                     <Download />
                     Download
                   </ContextMenuItem>
@@ -255,6 +279,7 @@ export default function FileActionsMenu({
         onOpenChange={setRenameDialogOpen}
         id={canRename ? effectiveIds[0] : null}
         currentName={primaryName ?? ''}
+        isDir={primaryIsDir ?? false}
       />
 
       <MoveDialog

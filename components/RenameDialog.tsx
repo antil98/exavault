@@ -14,7 +14,7 @@ import {
 import { Field, FieldError, FieldGroup } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { renameFile } from '@/lib/file-actions';
+import { renameFileAction } from '@/app/actions/files';
 import { LoaderCircle } from 'lucide-react';
 
 export default function RenameDialog({
@@ -22,13 +22,19 @@ export default function RenameDialog({
   onOpenChange,
   id,
   currentName,
+  isDir,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   id: string | null;
   currentName: string;
+  isDir: boolean;
 }) {
-  const [name, setName] = useState(currentName);
+  const extensionStart = !isDir ? currentName.lastIndexOf('.') : -1;
+  const extension = extensionStart > 0 ? currentName.slice(extensionStart) : '';
+  const displayName =
+    extensionStart > 0 ? currentName.slice(0, extensionStart) : currentName;
+  const [name, setName] = useState(displayName);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const inputId = useId();
@@ -38,9 +44,9 @@ export default function RenameDialog({
   useEffect(() => {
     if (!open) return;
 
-    setName(currentName);
+    setName(displayName);
     setError('');
-  }, [currentName, open]);
+  }, [displayName, open]);
 
   async function handleRename(e: React.FormEvent) {
     e.preventDefault();
@@ -58,7 +64,14 @@ export default function RenameDialog({
     setError('');
 
     try {
-      await renameFile(id, trimmedName);
+      const nextName = isDir ? trimmedName : `${trimmedName}${extension}`;
+      const result = await renameFileAction(id, nextName);
+
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+
       onOpenChange(false);
       router.refresh();
     } catch (err) {
@@ -79,17 +92,25 @@ export default function RenameDialog({
           <FieldGroup className="my-5">
             <Field>
               <Label htmlFor={inputId}>New name</Label>
-              <Input
-                id={inputId}
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  setError('');
-                }}
-                aria-invalid={!!error}
-                aria-describedby={error ? errorId : undefined}
-                autoFocus
-              />
+              <div className="flex items-center">
+                <Input
+                  id={inputId}
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setError('');
+                  }}
+                  aria-invalid={!!error}
+                  aria-describedby={error ? errorId : undefined}
+                  autoFocus
+                  className={extension ? 'rounded-r-none' : undefined}
+                />
+                {extension && (
+                  <span className="flex h-9 items-center rounded-r-md border border-l-0 bg-muted px-3 text-sm text-muted-foreground">
+                    {extension}
+                  </span>
+                )}
+              </div>
               <FieldError id={errorId}>{error}</FieldError>
             </Field>
           </FieldGroup>
@@ -98,7 +119,7 @@ export default function RenameDialog({
             <DialogClose render={<Button variant="outline">Cancel</Button>} />
             <Button
               type="submit"
-              disabled={loading || !name.trim() || name.trim() === currentName}
+              disabled={loading || !name.trim() || name.trim() === displayName}
               className="relative"
             >
               <span className={loading ? 'opacity-0' : 'opacity-100'}>

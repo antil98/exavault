@@ -1,5 +1,5 @@
 import { getFileTree } from '@/lib/data';
-import { buildFullPath } from '@/lib/utils';
+import { buildFullPath } from '@/lib/build-paths';
 import archiver from 'archiver';
 import { Readable } from 'stream';
 import { ReadableStream } from 'stream/web';

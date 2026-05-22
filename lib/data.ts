@@ -39,7 +39,7 @@ export async function getFilesByParent(
         AND owner_id = ${ownerId}
         AND is_trashed = ${isTrashed}
         AND lower(name) LIKE lower(${`%${searchQuery}%`})
-        ORDER BY is_dir DESC, name DESC
+        ORDER BY is_dir DESC, created_at DESC
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
       `
     : await sql`
@@ -48,7 +48,7 @@ export async function getFilesByParent(
         AND owner_id = ${ownerId}
         AND is_trashed = ${isTrashed}
         AND lower(name) LIKE lower(${`%${searchQuery}%`})
-        ORDER BY is_dir DESC, name DESC
+        ORDER BY is_dir DESC, created_at DESC
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
       `;
 
@@ -132,6 +132,50 @@ export async function uploadFile({
       ${size}
     )
   `;
+}
+
+export async function createFolder({
+  name,
+  parentId,
+  ownerId,
+}: {
+  name: string;
+  parentId: string | null;
+  ownerId: string;
+}) {
+  const trimmedName = name.trim();
+
+  if (!trimmedName) {
+    return { ok: false as const, message: 'Invalid folder name' };
+  }
+
+  const existing = await sql`
+    SELECT name
+    FROM files
+    WHERE parent_id = ${parentId}
+    AND owner_id = ${ownerId}
+    AND is_dir = true
+  `;
+
+  const existingNames = existing.map((file) => file.name);
+  const finalName = getUniqueName(trimmedName, existingNames);
+
+  await sql`
+    INSERT INTO files (
+      name,
+      parent_id,
+      owner_id,
+      is_dir
+    )
+    VALUES (
+      ${finalName},
+      ${parentId},
+      ${ownerId},
+      true
+    )
+  `;
+
+  return { ok: true as const };
 }
 
 export async function getFoldersByParent(
@@ -270,8 +314,22 @@ export async function renameFile({
     return { ok: false as const, status: 400, message: 'Invalid name' };
   }
 
+  const originalDotIndex = file.name.lastIndexOf('.');
+  const originalExtension =
+    !file.is_dir && originalDotIndex > 0 ? file.name.slice(originalDotIndex) : '';
+  const newDotIndex = trimmedName.lastIndexOf('.');
+  const newBaseName =
+    !file.is_dir && newDotIndex > 0
+      ? trimmedName.slice(0, newDotIndex).trim()
+      : trimmedName;
+  const finalName = file.is_dir ? trimmedName : `${newBaseName}${originalExtension}`;
+
+  if (!file.is_dir && !newBaseName) {
+    return { ok: false as const, status: 400, message: 'Invalid name' };
+  }
+
   const hasConflict = await nameExistsForOwner({
-    name: trimmedName,
+    name: finalName,
     ownerId,
     excludeId: id,
   });
@@ -286,7 +344,7 @@ export async function renameFile({
 
   await sql`
     UPDATE files
-    SET name = ${trimmedName}
+    SET name = ${finalName}
     WHERE id = ${id}
     AND owner_id = ${ownerId}
   `;

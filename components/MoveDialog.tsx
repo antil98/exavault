@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FieldError } from '@/components/ui/field';
-import { moveFiles } from '@/lib/file-actions';
+import { moveFilesAction } from '@/app/actions/files';
 import { FileItem } from '@/types/file-type';
 import { ArrowLeft, Folder, LoaderCircle } from 'lucide-react';
 
@@ -78,7 +78,13 @@ export default function MoveDialog({
     setError('');
 
     try {
-      await moveFiles(ids, selectedFolderId);
+      const result = await moveFilesAction(ids, selectedFolderId);
+
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+
       onOpenChange(false);
       router.refresh();
     } catch (err) {

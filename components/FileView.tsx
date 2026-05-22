@@ -6,7 +6,11 @@ import { FileItem } from '@/types/file-type';
 import FileActionsMenu from './FileActionsMenu';
 import Link from 'next/link';
 import { Folder, File, Info } from 'lucide-react';
-import { deleteForever, emptyTrash, trashFiles } from '@/lib/file-actions';
+import {
+  deleteForeverAction,
+  emptyTrashAction,
+  trashFilesAction,
+} from '@/app/actions/files';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
@@ -40,6 +44,9 @@ export default function FileView({
   const files = use(filesPromise);
   const orderedIds = files.map((f) => f.id);
   const selectedIds = Array.from(state.selectedIds);
+  const selectedFiles = files.filter((file) => state.selectedIds.has(file.id));
+  const selectedDownloadsAsArchive =
+    selectedFiles.length !== 1 || selectedFiles[0]?.is_dir === true;
 
   const isVisible = state.selectedIds.size > 0;
 
@@ -59,7 +66,12 @@ export default function FileView({
 
       try {
         if (fileViewPage === 'files') {
-          await trashFiles(selectedIds);
+          const result = await trashFilesAction(selectedIds);
+
+          if (!result.ok) {
+            throw new Error(result.message);
+          }
+
           toast.success('File(s) moved to trash');
           router.refresh();
         } else {
@@ -86,7 +98,12 @@ export default function FileView({
     setKeyboardDeleting(true);
 
     try {
-      await deleteForever(keyboardDeleteIds);
+      const result = await deleteForeverAction(keyboardDeleteIds);
+
+      if (!result.ok) {
+        throw new Error(result.message);
+      }
+
       toast.success('Deleted permanently');
       setKeyboardDeleteOpen(false);
       setKeyboardDeleteIds([]);
@@ -106,7 +123,7 @@ export default function FileView({
     const toastId = toast.loading('Emptying trash...');
 
     try {
-      await emptyTrash();
+      await emptyTrashAction();
       toast.success('Trash emptied', { id: toastId });
       setEmptyTrashOpen(false);
       router.refresh();
@@ -159,7 +176,11 @@ export default function FileView({
                   <span className="shrink-0 text-sm">
                     {state.selectedIds.size} file(s) selected
                   </span>
-                  <BulkActions fileViewPage={fileViewPage} ids={selectedIds} />
+                  <BulkActions
+                    fileViewPage={fileViewPage}
+                    ids={selectedIds}
+                    downloadsAsArchive={selectedDownloadsAsArchive}
+                  />
                 </div>
               )}
             </div>
@@ -181,7 +202,7 @@ export default function FileView({
               <div />
             </div>
 
-            {files.map((file, i) => (
+            {files.map((file) => (
               <div key={file.id}>
                 <FileActionsMenu
                   menuType="context"
@@ -189,7 +210,13 @@ export default function FileView({
                   ids={selectedIds}
                   primaryId={file.id}
                   primaryName={file.name}
+                  primaryIsDir={file.is_dir}
                   isPrimarySelected={state.selectedIds.has(file.id)}
+                  downloadsAsArchive={
+                    state.selectedIds.has(file.id)
+                      ? selectedDownloadsAsArchive
+                      : file.is_dir
+                  }
                 >
                   <div
                     title={file.name}
@@ -263,7 +290,13 @@ export default function FileView({
                         ids={selectedIds}
                         primaryId={file.id}
                         primaryName={file.name}
+                        primaryIsDir={file.is_dir}
                         isPrimarySelected={state.selectedIds.has(file.id)}
+                        downloadsAsArchive={
+                          state.selectedIds.has(file.id)
+                            ? selectedDownloadsAsArchive
+                            : file.is_dir
+                        }
                         onSelectItem={() =>
                           select(file.id, 'click', orderedIds)
                         }
@@ -331,7 +364,13 @@ export default function FileView({
                       ids={selectedIds}
                       primaryId={file.id}
                       primaryName={file.name}
+                      primaryIsDir={file.is_dir}
                       isPrimarySelected={state.selectedIds.has(file.id)}
+                      downloadsAsArchive={
+                        state.selectedIds.has(file.id)
+                          ? selectedDownloadsAsArchive
+                          : file.is_dir
+                      }
                       onSelectItem={() => select(file.id, 'click', orderedIds)}
                     />
                   </div>

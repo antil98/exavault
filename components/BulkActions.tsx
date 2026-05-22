@@ -17,18 +17,20 @@ import {
 import MoveDialog from '@/components/MoveDialog';
 import { Trash2, Download, Move, RotateCcw, LoaderCircle } from 'lucide-react';
 import {
-  downloadFiles,
-  trashFiles,
-  restoreFiles,
-  deleteForever,
-} from '@/lib/file-actions';
+  deleteForeverAction,
+  restoreFilesAction,
+  trashFilesAction,
+} from '@/app/actions/files';
+import { downloadFiles } from '@/lib/download-files';
 
 export default function BulkActions({
   fileViewPage,
   ids,
+  downloadsAsArchive,
 }: {
   fileViewPage: 'files' | 'trash';
   ids: string[];
+  downloadsAsArchive: boolean;
 }) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
@@ -38,22 +40,26 @@ export default function BulkActions({
   const router = useRouter();
   const hasSelection = ids.length > 0;
 
-  async function handleZipDownload() {
+  async function handleDownload() {
     if (!hasSelection || busyAction) return;
 
     setBusyAction('download');
-    const zipToast = toast.loading(`Zipping ${ids.length} file(s)...`);
+    const downloadToast = toast.loading(
+      downloadsAsArchive
+        ? `Zipping ${ids.length} item(s)...`
+        : 'Preparing download...',
+    );
 
     try {
       await downloadFiles(ids);
       toast.success('Download ready', {
-        id: zipToast,
+        id: downloadToast,
       });
     } catch (err) {
-      console.error('ZIP failed:', err);
+      console.error('Download failed:', err);
 
-      toast.error('Failed to create ZIP', {
-        id: zipToast,
+      toast.error('Download failed', {
+        id: downloadToast,
       });
     } finally {
       setBusyAction(null);
@@ -67,7 +73,12 @@ export default function BulkActions({
     const toastId = toast.loading('Moving file(s) to trash...');
 
     try {
-      await trashFiles(ids);
+      const result = await trashFilesAction(ids);
+
+      if (!result.ok) {
+        throw new Error(result.message);
+      }
+
       toast.success('File(s) moved to trash', { id: toastId });
       router.refresh();
     } catch (err) {
@@ -85,7 +96,12 @@ export default function BulkActions({
     const toastId = toast.loading('Restoring file(s)...');
 
     try {
-      await restoreFiles(ids);
+      const result = await restoreFilesAction(ids);
+
+      if (!result.ok) {
+        throw new Error(result.message);
+      }
+
       toast.success('File(s) restored', { id: toastId });
       router.refresh();
     } catch (err) {
@@ -103,7 +119,11 @@ export default function BulkActions({
     const toastId = toast.loading('Deleting permanently...');
 
     try {
-      await deleteForever(ids);
+      const result = await deleteForeverAction(ids);
+
+      if (!result.ok) {
+        throw new Error(result.message);
+      }
 
       toast.success('Deleted permanently', { id: toastId });
       setDeleteDialogOpen(false);
@@ -126,7 +146,7 @@ export default function BulkActions({
             title="Download selected files"
             aria-label="Download selected files"
             disabled={!hasSelection || !!busyAction}
-            onClick={handleZipDownload}
+            onClick={handleDownload}
           >
             {busyAction === 'download' ? (
               <LoaderCircle className="animate-spin" />
