@@ -11,10 +11,16 @@ import {
   restoreFiles as restoreFilesInDb,
   trashFiles as trashFilesInDb,
 } from '@/lib/data';
+import { auth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
 
-const userId = '0';
+const { userId } = await auth();
 
 export async function renameFileAction(id: string, newName: string) {
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
   if (!id || !newName.trim()) {
     return {
       ok: false as const,
@@ -34,7 +40,14 @@ export async function renameFileAction(id: string, newName: string) {
   return { ok: true as const };
 }
 
-export async function createFolderAction(name: string, parentId: string | null) {
+export async function createFolderAction(
+  name: string,
+  parentId: string | null,
+) {
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
   if (!name.trim()) {
     return {
       ok: false as const,
@@ -55,6 +68,10 @@ export async function createFolderAction(name: string, parentId: string | null) 
 }
 
 export async function moveFilesAction(ids: string[], targetFolderId: string) {
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
   if (!Array.isArray(ids) || !ids.length || !targetFolderId) {
     return {
       ok: false as const,
@@ -75,6 +92,9 @@ export async function moveFilesAction(ids: string[], targetFolderId: string) {
 }
 
 export async function trashFilesAction(ids: string[]) {
+  if (!userId) {
+    redirect('/sign-in');
+  }
   if (!Array.isArray(ids) || !ids.length) {
     return {
       ok: false as const,
@@ -91,6 +111,10 @@ export async function trashFilesAction(ids: string[]) {
 }
 
 export async function restoreFilesAction(ids: string[]) {
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
   if (!Array.isArray(ids) || !ids.length) {
     return {
       ok: false as const,
@@ -107,6 +131,10 @@ export async function restoreFilesAction(ids: string[]) {
 }
 
 export async function deleteForeverAction(ids: string[]) {
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
   if (!Array.isArray(ids) || !ids.length) {
     return {
       ok: false as const,
@@ -130,6 +158,10 @@ export async function deleteForeverAction(ids: string[]) {
 }
 
 export async function emptyTrashAction() {
+  if (!userId) {
+    redirect('/sign-in');
+  }
+  
   const items = await getTrashedFiles(userId);
   const ids = items.map((item) => item.id);
 

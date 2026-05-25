@@ -5,6 +5,8 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { FolderOpen } from 'lucide-react';
 import { FileSearch } from '@/components/FileSearch';
 import FilePagination from '@/components/FilePagination';
+import { auth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
 
 export default async function Page(props: {
   params: { folderId: string };
@@ -14,7 +16,12 @@ export default async function Page(props: {
   const searchParams = await props.searchParams;
 
   const currentFolderId = pageParams.folderId;
-  const userId = '0';
+
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect('/sign-in');
+  }
 
   const searchQuery = searchParams?.search || '';
   const page = Number(searchParams?.page) || 1;
@@ -26,18 +33,16 @@ export default async function Page(props: {
     searchQuery,
     page,
   );
-  const totalPages = await getTotalPages(currentFolderId, userId, false, searchQuery);
+  const totalPages = await getTotalPages(
+    currentFolderId,
+    userId,
+    false,
+    searchQuery,
+  );
 
   return (
     <div className="w-full min-h-screen p-2">
-      <div className="flex items-center justify-between">
-        <SidebarTrigger className="md:hidden" />
-        <Breadcrumbs
-          currentFolderId={currentFolderId}
-          userId={userId}
-          fileViewPage="files"
-        />
-      </div>
+      <SidebarTrigger className="md:hidden" />
       <div className=" space-y-6 p-4 md:p-6">
         <div className="space-y-5">
           <div className="flex flex-wrap justify-between">
@@ -49,8 +54,12 @@ export default async function Page(props: {
           </div>
         </div>
 
+        <Breadcrumbs
+          currentFolderId={currentFolderId}
+          userId={userId}
+          fileViewPage="files"
+        />
         <FileView filesPromise={storedFiles} fileViewPage="files" />
-
         <FilePagination currentPage={page} totalPages={totalPages} />
       </div>
     </div>

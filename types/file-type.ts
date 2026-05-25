@@ -5,6 +5,7 @@ export type FileItem = {
   name: string;
   url: string;
   size: number;
+  file_type: string;
   created_at: string;
   is_dir: boolean;
   is_trashed: boolean;

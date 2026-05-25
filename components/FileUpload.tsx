@@ -49,6 +49,7 @@ export default function FileUpload({
               parentId: currentFolderId,
               size: file.size,
               originalName: file.name,
+              fileType: file.type,
             }),
           });
         }),

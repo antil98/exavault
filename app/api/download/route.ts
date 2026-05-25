@@ -3,10 +3,17 @@ import { buildFullPath } from '@/lib/build-paths';
 import archiver from 'archiver';
 import { Readable } from 'stream';
 import { ReadableStream } from 'stream/web';
+import { auth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
 
 export async function POST(req: Request) {
   const { ids }: { ids: string[] } = await req.json();
-  const userId = '0';
+
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect('/sign-in');
+  }
 
   if (!ids || !Array.isArray(ids)) {
     return new Response('Invalid ids', { status: 400 });

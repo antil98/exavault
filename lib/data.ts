@@ -100,6 +100,7 @@ export async function uploadFile({
   size,
   name,
   ownerId,
+  fileType,
 }: {
   url: string;
   pathname: string;
@@ -107,6 +108,7 @@ export async function uploadFile({
   size: number;
   name: string;
   ownerId: string;
+  fileType: string;
 }) {
   const existingFile = await getAllFiles(parentId, ownerId);
   const existingNames = existingFile.map((file) => file.name);
@@ -120,7 +122,8 @@ export async function uploadFile({
       is_dir,
       url,
       pathname,
-      size
+      size,
+      file_type
     )
     VALUES (
       ${finalName},
@@ -129,7 +132,8 @@ export async function uploadFile({
       false,
       ${url},
       ${pathname},
-      ${size}
+      ${size},
+      ${fileType}
     )
   `;
 }

@@ -1,9 +1,16 @@
 import { handleUpload } from '@vercel/blob/client';
 import { uploadFile } from '../../../lib/data';
+import { auth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const userId = '0';
+
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect('/sign-in');
+  }
 
   try {
     const jsonResponse = await handleUpload({
@@ -50,6 +57,7 @@ export async function POST(req: Request) {
             size: parsed.size,
             name: parsed.originalName,
             ownerId: userId,
+            fileType: parsed.fileType,
           });
 
           console.log('✅ DB INSERT SUCCESS');

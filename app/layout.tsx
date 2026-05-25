@@ -1,3 +1,5 @@
+import { ClerkProvider } from '@clerk/nextjs';
+import { shadcn } from '@clerk/ui/themes';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Inter } from 'next/font/google';
 import './globals.css';
@@ -41,12 +43,10 @@ export default function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col">
-        <main>{children}</main>
-        <Toaster 
-          theme='dark'
-          richColors
-          position='bottom-right'
-        />
+        <ClerkProvider appearance={{ theme: shadcn }}>
+          <main>{children}</main>
+          <Toaster theme="dark" richColors position="bottom-right" />
+        </ClerkProvider>
       </body>
     </html>
   );

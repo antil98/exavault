@@ -1,5 +1,6 @@
 'use client';
 
+import { Show, SignOutButton, UserButton } from '@clerk/nextjs';
 import {
   Sidebar,
   SidebarContent,
@@ -51,8 +52,10 @@ export function AppSidebar() {
               Exavault
             </span>
           </div>
-          <div className="shrink-0" title="Collapse/Expand sidebar">
-            <SidebarTrigger />
+          <div className="flex shrink-0 items-center gap-2">
+            <div title="Collapse/Expand sidebar">
+              <SidebarTrigger />
+            </div>
           </div>
         </div>
       </SidebarHeader>
@@ -124,7 +127,14 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter />
+      <SidebarFooter>
+        <Show when="signed-in">
+          <div className="flex items-center justify-between p-1 shrink-0 group-data-[collapsible=icon]:hidden">
+            <UserButton showName/>
+            <SignOutButton />
+          </div>
+        </Show>
+      </SidebarFooter>
     </Sidebar>
   );
 }

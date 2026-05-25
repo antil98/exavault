@@ -267,7 +267,7 @@ export default function FileView({
                     </div>
 
                     <div className="text-xs text-muted-foreground">
-                      {file.is_dir ? 'Folder' : 'File'}
+                      {file.file_type ? file.file_type : 'Folder'}
                     </div>
 
                     <div className="text-xs text-muted-foreground whitespace-nowrap">

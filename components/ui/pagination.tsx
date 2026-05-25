@@ -46,6 +46,7 @@ type PaginationLinkProps = {
 function PaginationLink({
   className,
   isActive,
+  isDisabled,
   size = 'icon',
   ...props
 }: PaginationLinkProps) {
@@ -53,15 +54,16 @@ function PaginationLink({
     <Button
       variant={isActive ? 'outline' : 'ghost'}
       size={size}
-      disabled={props.isDisabled}
+      disabled={isDisabled}
       className={cn(
-        props.isDisabled && 'opacity-50 pointer-events-none',
+        isDisabled && 'opacity-50 pointer-events-none',
         className,
       )}
       nativeButton={false}
       render={
         <Link
           aria-current={isActive ? 'page' : undefined}
+          aria-disabled={isDisabled}
           data-slot="pagination-link"
           data-active={isActive}
           {...props}
