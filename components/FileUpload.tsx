@@ -41,7 +41,6 @@ export default function FileUpload({
       await Promise.all(
         selectedFiles.map((file) => {
           const pathname = `${currentFolderId}/${file.name}`;
-
           return upload(pathname, file, {
             access: 'public',
             handleUploadUrl: '/api/upload',
