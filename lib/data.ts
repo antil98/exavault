@@ -4,7 +4,15 @@ import { getUniqueName } from './utils';
 
 export const ROOT_FOLDER_ID = '2bcecc5f-089b-42b7-91fe-307ff392dea2';
 
-export async function getAllFiles(parentId: string | null, ownerId: string) {
+export async function getAllUserFiles(ownerId: string) {
+  return await sql`
+    SELECT *
+    FROM files
+    WHERE owner_id = ${ownerId}
+  `;
+}
+
+export async function getAllFilesInFolder(parentId: string | null, ownerId: string) {
   return await sql`
     SELECT name
     FROM files
@@ -110,7 +118,7 @@ export async function uploadFile({
   ownerId: string;
   fileType: string;
 }) {
-  const existingFile = await getAllFiles(parentId, ownerId);
+  const existingFile = await getAllFilesInFolder(parentId, ownerId);
   const existingNames = existingFile.map((file) => file.name);
   const finalName = getUniqueName(name, existingNames);
 
