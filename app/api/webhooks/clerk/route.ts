@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       const ids = items.map((item) => item.id);
 
       if (!ids.length) {
-        return { ok: true as const, deletedCount: 0 };
+        return Response.json({ ok: true, deletedCount: 0 });
       }
 
       await Promise.all(
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
 
       await deleteForever(ids, userId);
 
-      break;
+      return Response.json({ ok: true, deletedCount: ids.length });
     }
   }
 
