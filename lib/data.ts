@@ -1,8 +1,42 @@
 import { sql } from '@/lib/db';
 import { FileItem } from '@/types/file-type';
 import { getUniqueName } from './utils';
+import { auth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
 
-export const ROOT_FOLDER_ID = '2bcecc5f-089b-42b7-91fe-307ff392dea2';
+export async function createUserRootFolder(userId: string) {
+  await sql`
+    INSERT INTO files (
+      name,
+      parent_id,
+      owner_id,
+      is_dir
+    )
+    SELECT
+      'root',
+      NULL,
+      ${userId},
+      true
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM files
+      WHERE owner_id = ${userId}
+        AND parent_id IS NULL
+        AND is_dir = true
+    )
+  `;
+}
+
+export async function getUserRootFolder(userId: string) {
+  return await sql`
+    SELECT id
+    FROM files
+    WHERE owner_id = ${userId}
+    AND parent_id IS NULL
+    AND is_dir = true
+    LIMIT 1
+  `;
+}
 
 export async function getAllUserFiles(ownerId: string) {
   return await sql`
@@ -12,7 +46,10 @@ export async function getAllUserFiles(ownerId: string) {
   `;
 }
 
-export async function getAllFilesInFolder(parentId: string | null, ownerId: string) {
+export async function getAllFilesInFolder(
+  parentId: string | null,
+  ownerId: string,
+) {
   return await sql`
     SELECT name
     FROM files
@@ -328,13 +365,17 @@ export async function renameFile({
 
   const originalDotIndex = file.name.lastIndexOf('.');
   const originalExtension =
-    !file.is_dir && originalDotIndex > 0 ? file.name.slice(originalDotIndex) : '';
+    !file.is_dir && originalDotIndex > 0
+      ? file.name.slice(originalDotIndex)
+      : '';
   const newDotIndex = trimmedName.lastIndexOf('.');
   const newBaseName =
     !file.is_dir && newDotIndex > 0
       ? trimmedName.slice(0, newDotIndex).trim()
       : trimmedName;
-  const finalName = file.is_dir ? trimmedName : `${newBaseName}${originalExtension}`;
+  const finalName = file.is_dir
+    ? trimmedName
+    : `${newBaseName}${originalExtension}`;
 
   if (!file.is_dir && !newBaseName) {
     return { ok: false as const, status: 400, message: 'Invalid name' };
@@ -492,6 +533,14 @@ export async function moveFiles({
 }
 
 export async function trashFiles(ids: string[], ownerId: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
+  const rootFolderId = await getUserRootFolder(userId);
+
   await sql`
     UPDATE files AS f
     SET
@@ -500,7 +549,7 @@ export async function trashFiles(ids: string[], ownerId: string) {
       parent_id = CASE
         WHEN p.is_trashed = false
           AND NOT (p.id = ANY(${ids}))
-        THEN ${ROOT_FOLDER_ID}
+        THEN ${rootFolderId[0].id}
         ELSE f.parent_id
       END
     FROM files AS p
@@ -514,6 +563,14 @@ export async function trashFiles(ids: string[], ownerId: string) {
 }
 
 export async function restoreFiles(ids: string[], ownerId: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
+  const rootFolderId = await getUserRootFolder(userId);
+  
   await sql`
     UPDATE files AS f
     SET
@@ -522,7 +579,7 @@ export async function restoreFiles(ids: string[], ownerId: string) {
       original_location = CASE
         WHEN p.is_trashed = true
           AND NOT (p.id = ANY(${ids}))
-        THEN ${ROOT_FOLDER_ID}
+        THEN ${rootFolderId[0].id}
         ELSE f.original_location
       END
     FROM files AS p

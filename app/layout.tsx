@@ -1,21 +1,24 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import { shadcn } from '@clerk/ui/themes';
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono, Inter } from 'next/font/google';
+import { Roboto, Playfair_Display, Fira_Code } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from 'sonner';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const fontSans = Roboto({
   subsets: ['latin'],
+  variable: '--font-sans',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const fontSerif = Playfair_Display({
   subsets: ['latin'],
+  variable: '--font-serif',
+});
+
+const fontMono = Fira_Code({
+  subsets: ['latin'],
+  variable: '--font-mono',
 });
 
 export const metadata: Metadata = {
@@ -35,10 +38,10 @@ export default function RootLayout({
         'dark',
         'h-full',
         'antialiased',
-        geistSans.variable,
-        geistMono.variable,
+        fontSans.variable,
+        fontSerif.variable,
+        fontMono.variable,
         'font-sans',
-        inter.variable,
         'scrollbar-gutter-stable',
       )}
     >

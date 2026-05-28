@@ -1,4 +1,4 @@
-import { getFoldersByParent, ROOT_FOLDER_ID } from '@/lib/data';
+import { getFoldersByParent, getUserRootFolder } from '@/lib/data';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
@@ -9,8 +9,10 @@ export async function GET(req: Request) {
     redirect('/sign-in');
   }
 
+  const rootFolderId = await getUserRootFolder(userId);
+
   const { searchParams } = new URL(req.url);
-  const parentId = searchParams.get('parentId') || ROOT_FOLDER_ID;
+  const parentId = searchParams.get('parentId') || rootFolderId[0].id;
 
   try {
     const folders = await getFoldersByParent(parentId, userId);

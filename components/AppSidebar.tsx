@@ -22,17 +22,15 @@ import { useParams, usePathname } from 'next/navigation';
 import CreateFolder from './CreateFolder';
 import FileUpload from './FileUpload';
 
-const ROOT_FOLDER_ID = '2bcecc5f-089b-42b7-91fe-307ff392dea2';
-
-export function AppSidebar() {
+export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
   const { isMobile, setOpenMobile } = useSidebar();
   const pathname = usePathname();
 
   const params = useParams<{ folderId?: string }>();
   const isTrashRoute = pathname.startsWith('/trash/');
   const currentFolderId = isTrashRoute
-    ? ROOT_FOLDER_ID
-    : (params.folderId ?? ROOT_FOLDER_ID);
+    ? rootFolderId
+    : (params.folderId ?? rootFolderId);
 
   const closeSidebar = () => {
     if (isMobile) {
@@ -95,7 +93,7 @@ export function AppSidebar() {
             <SidebarMenu className="gap-1 select-none">
               <SidebarMenuItem>
                 <Link
-                  href={`/files/${ROOT_FOLDER_ID}`}
+                  href={`/files/${rootFolderId}`}
                   className="w-full"
                   onClick={closeSidebar}
                 >
@@ -110,7 +108,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <Link
-                  href={`/trash/${ROOT_FOLDER_ID}`}
+                  href={`/trash/${rootFolderId}`}
                   className="w-full"
                   onClick={closeSidebar}
                 >
