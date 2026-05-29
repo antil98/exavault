@@ -28,11 +28,13 @@ export default function BulkActions({
   ids,
   downloadsAsArchive,
   userRootFolder,
+  onClearSelection,
 }: {
   fileViewPage: 'files' | 'trash';
   ids: string[];
   downloadsAsArchive: boolean;
   userRootFolder: string;
+  onClearSelection: () => void;
 }) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);

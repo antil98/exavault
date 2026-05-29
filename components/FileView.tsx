@@ -183,6 +183,7 @@ export default function FileView({
                     ids={selectedIds}
                     downloadsAsArchive={selectedDownloadsAsArchive}
                     userRootFolder={userRootFolder}
+                    onClearSelection={() => select('', 'clear', orderedIds)}
                   />
                 </div>
               )}
@@ -220,7 +221,7 @@ export default function FileView({
                       : file.is_dir
                   }
                   userRootFolder={userRootFolder}
-                  
+                  onClearSelection={() => select('', 'clear', orderedIds)}
                 >
                   <div
                     title={file.name}
@@ -305,6 +306,7 @@ export default function FileView({
                         onSelectItem={() =>
                           select(file.id, 'click', orderedIds)
                         }
+                        onClearSelection={() => select('', 'clear', orderedIds)}
                       />
                     </div>
                   </div>
@@ -376,8 +378,9 @@ export default function FileView({
                           ? selectedDownloadsAsArchive
                           : file.is_dir
                       }
-                      onSelectItem={() => select(file.id, 'click', orderedIds)}
                       userRootFolder={userRootFolder}
+                      onSelectItem={() => select(file.id, 'click', orderedIds)}
+                      onClearSelection={() => select('', 'clear', orderedIds)}
                     />
                   </div>
                 </div>

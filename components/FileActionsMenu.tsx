@@ -48,7 +48,6 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import RenameDialog from './RenameDialog';
 import MoveDialog from './MoveDialog';
-import { useSelection } from '@/hooks/useSelection';
 
 export default function FileActionsMenu({
   menuType,
@@ -62,6 +61,7 @@ export default function FileActionsMenu({
   children,
   userRootFolder,
   onSelectItem,
+  onClearSelection,
 }: {
   menuType: 'dropdown' | 'context';
   fileViewPage: 'files' | 'trash';
@@ -74,8 +74,8 @@ export default function FileActionsMenu({
   children?: React.ReactNode;
   userRootFolder: string;
   onSelectItem?: () => void;
+  onClearSelection: () => void;
 }) {
-  const { state, select } = useSelection();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
@@ -113,10 +113,8 @@ export default function FileActionsMenu({
       return;
     }
 
-    console.log(state.selectedIds.size)
-
-    
     toast.success('File(s) moved to trash');
+    onClearSelection();
     router.refresh();
   }
 
@@ -129,6 +127,7 @@ export default function FileActionsMenu({
     }
 
     toast.success('File(s) restored');
+    onClearSelection();
     router.refresh();
   }
 
@@ -143,6 +142,7 @@ export default function FileActionsMenu({
       }
 
       toast.success('Deleted permanently', { id: toastId });
+      onClearSelection();
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -243,7 +243,7 @@ export default function FileActionsMenu({
                   </ContextMenuItem>
                   <ContextMenuItem onClick={handleTrash}>
                     <Trash2 />
-                    Delete
+                    Move to trash
                   </ContextMenuItem>
                 </>
               ) : (
