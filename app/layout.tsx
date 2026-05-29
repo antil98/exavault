@@ -45,7 +45,7 @@ export default function RootLayout({
         'scrollbar-gutter-stable',
       )}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col select-none">
         <ClerkProvider appearance={{ theme: shadcn }}>
           <main>{children}</main>
           <Toaster theme="dark" richColors position="bottom-right" />

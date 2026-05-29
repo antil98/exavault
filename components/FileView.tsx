@@ -244,7 +244,7 @@ export default function FileView({
                     className={`
                       grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
                       gap-4 items-center px-3 py-3 transition
-                      hover:bg-muted/50 select-none border-b
+                      hover:bg-muted/50 border-b
                       ${state.selectedIds.has(file.id) ? 'bg-muted' : ''}
                     `}
                   >

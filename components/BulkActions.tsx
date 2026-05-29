@@ -245,6 +245,7 @@ export default function BulkActions({
         onOpenChange={setMoveDialogOpen}
         ids={ids}
         userRootFolder={userRootFolder}
+        onClearSelection={onClearSelection}
       />
     </>
   );

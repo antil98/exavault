@@ -12,10 +12,6 @@ import {
 import { getPaginationItems } from '@/lib/utils';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-
-
-
-
 export default function FilePagination({
   currentPage,
   totalPages,
@@ -25,6 +21,7 @@ export default function FilePagination({
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const lastPage = Math.max(1, totalPages);
 
   const createPageURL = (pageNumber: number) => {
     const params = new URLSearchParams(searchParams);
@@ -32,7 +29,7 @@ export default function FilePagination({
     return `${pathname}?${params.toString()}`;
   };
 
-  const pages = getPaginationItems(currentPage, totalPages);
+  const pages = getPaginationItems(currentPage, lastPage);
 
   return (
     <Pagination>
@@ -66,8 +63,8 @@ export default function FilePagination({
         })}
         <PaginationItem>
           <PaginationNext
-            href={createPageURL(Math.min(totalPages, currentPage + 1))}
-            isDisabled={currentPage === totalPages}
+            href={createPageURL(Math.min(lastPage, currentPage + 1))}
+            isDisabled={currentPage >= lastPage}
           />
         </PaginationItem>
       </PaginationContent>

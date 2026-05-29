@@ -21,11 +21,13 @@ export default function MoveDialog({
   onOpenChange,
   ids,
   userRootFolder,
+  onClearSelection,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   ids: string[];
   userRootFolder: string;
+  onClearSelection: () => void;
 }) {
   const [currentFolderId, setCurrentFolderId] = useState(userRootFolder);
   const [folderPath, setFolderPath] = useState([
@@ -86,6 +88,7 @@ export default function MoveDialog({
       }
 
       onOpenChange(false);
+      onClearSelection();
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Move failed');

@@ -65,7 +65,7 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
         <SidebarGroup className="px-2 py-3 group-data-[collapsible=icon]:py-2">
           <SidebarGroupLabel>Actions</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-2 select-none">
+            <SidebarMenu className="gap-2">
               <SidebarMenuItem>
                 <FileUpload
                   currentFolderId={currentFolderId}
@@ -93,7 +93,7 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
         <SidebarGroup className="px-2 py-3 group-data-[collapsible=icon]:py-2">
           <SidebarGroupLabel>Browse</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1 select-none">
+            <SidebarMenu className="gap-1">
               <SidebarMenuItem>
                 <Link
                   href={`/files/${rootFolderId}`}

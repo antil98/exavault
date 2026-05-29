@@ -69,7 +69,7 @@ export default function CreateFolder({
         render={
           <SidebarMenuButton
             tooltip={buttonLabel}
-            className="h-10 gap-2.5 rounded-lg border border-dashed border-sidebar-border/90 bg-sidebar-accent/40 px-3 font-medium hover:bg-sidebar-accent group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-2! "
+            className="h-10"
           >
             <Plus />
             <span className="group-data-[collapsible=icon]:hidden">

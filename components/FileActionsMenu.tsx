@@ -294,6 +294,7 @@ export default function FileActionsMenu({
         onOpenChange={setMoveDialogOpen}
         ids={effectiveIds}
         userRootFolder={userRootFolder}
+        onClearSelection={onClearSelection}
       />
     </>
   );
