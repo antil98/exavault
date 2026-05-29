@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Show, SignOutButton } from '@clerk/nextjs';
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { getUserRootFolder } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { buttonVariants } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 export default async function Home() {
   const { userId } = await auth();
-
+  const user = await currentUser();
   const userRootFolder = await getUserRootFolder(userId!);
 
   return (
@@ -41,17 +41,21 @@ export default async function Home() {
                 <div>
                   <h2 className="text-3xl font-semibold">Welcome back</h2>
                   <p className="text-muted-foreground mt-2">
-                    You&apos;re signed in as {userId}
+                    You&apos;re signed in as {user?.firstName}
                   </p>
                 </div>
-                <Button variant="default" className="w-full h-12">
-                  <Link href={`/files/${userRootFolder[0].id}`}>
+                <Link href={`/files/${userRootFolder[0].id}`} className="w-full h-12">
+                  <Button variant="default" className="w-full h-12">
                     Go to your files
-                  </Link>
-                </Button>
+                  </Button>
+                </Link>
                 <SignOutButton>
                   <button
-                    className={cn(buttonVariants({ variant: 'ghost' }), 'w-full', 'h-12')}
+                    className={cn(
+                      buttonVariants({ variant: 'ghost' }),
+                      'w-full',
+                      'h-12',
+                    )}
                   >
                     Sign out
                   </button>

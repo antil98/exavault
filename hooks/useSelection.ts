@@ -10,7 +10,7 @@ export const useSelection = () => {
 
   function select(
     id: string,
-    type: 'click' | 'right' | 'ctrl' | 'shift' | 'toggle-all',
+    type: 'click' | 'right' | 'ctrl' | 'shift' | 'toggle-all' | 'clear',
     items: string[],
   ) {
     setState((prev) =>

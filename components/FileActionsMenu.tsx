@@ -48,6 +48,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import RenameDialog from './RenameDialog';
 import MoveDialog from './MoveDialog';
+import { useSelection } from '@/hooks/useSelection';
 
 export default function FileActionsMenu({
   menuType,
@@ -59,6 +60,7 @@ export default function FileActionsMenu({
   isPrimarySelected = false,
   downloadsAsArchive,
   children,
+  userRootFolder,
   onSelectItem,
 }: {
   menuType: 'dropdown' | 'context';
@@ -70,8 +72,10 @@ export default function FileActionsMenu({
   isPrimarySelected?: boolean;
   downloadsAsArchive: boolean;
   children?: React.ReactNode;
+  userRootFolder: string;
   onSelectItem?: () => void;
 }) {
+  const { state, select } = useSelection();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
@@ -109,6 +113,9 @@ export default function FileActionsMenu({
       return;
     }
 
+    console.log(state.selectedIds.size)
+
+    
     toast.success('File(s) moved to trash');
     router.refresh();
   }
@@ -286,6 +293,7 @@ export default function FileActionsMenu({
         open={moveDialogOpen}
         onOpenChange={setMoveDialogOpen}
         ids={effectiveIds}
+        userRootFolder={userRootFolder}
       />
     </>
   );

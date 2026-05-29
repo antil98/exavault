@@ -27,10 +27,12 @@ export default function BulkActions({
   fileViewPage,
   ids,
   downloadsAsArchive,
+  userRootFolder,
 }: {
   fileViewPage: 'files' | 'trash';
   ids: string[];
   downloadsAsArchive: boolean;
+  userRootFolder: string;
 }) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
@@ -240,6 +242,7 @@ export default function BulkActions({
         open={moveDialogOpen}
         onOpenChange={setMoveDialogOpen}
         ids={ids}
+        userRootFolder={userRootFolder}
       />
     </>
   );

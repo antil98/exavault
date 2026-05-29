@@ -1,6 +1,6 @@
 'use client';
 
-import { Show, SignOutButton, UserButton } from '@clerk/nextjs';
+import { Show, SignOutButton, UserButton, useUser } from '@clerk/nextjs';
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +21,8 @@ import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import CreateFolder from './CreateFolder';
 import FileUpload from './FileUpload';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
   const { isMobile, setOpenMobile } = useSidebar();
@@ -38,6 +40,8 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
       return;
     }
   };
+
+  const { user } = useUser();
 
   return (
     <Sidebar collapsible="icon">
@@ -86,7 +90,6 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
         <SidebarGroup className="px-2 py-3 group-data-[collapsible=icon]:py-2">
           <SidebarGroupLabel>Browse</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -127,9 +130,9 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
       </SidebarContent>
       <SidebarFooter>
         <Show when="signed-in">
-          <div className="flex items-center justify-between p-1 shrink-0 group-data-[collapsible=icon]:hidden">
-            <UserButton showName/>
-            <SignOutButton />
+          <div className="flex items-center gap-3">
+            <UserButton />
+            <span className="group-data-[collapsible=icon]:hidden">{user?.firstName}</span>
           </div>
         </Show>
       </SidebarFooter>

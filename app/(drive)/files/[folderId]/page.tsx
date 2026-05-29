@@ -1,5 +1,5 @@
 import FileView from '@/components/FileView';
-import { getFilesByParent, getTotalPages } from '@/lib/data';
+import { getFilesByParent, getTotalPages, getUserRootFolder } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { FolderOpen } from 'lucide-react';
@@ -40,6 +40,8 @@ export default async function Page(props: {
     searchQuery,
   );
 
+  const userRootFolder = await getUserRootFolder(userId);
+
   return (
     <div className="w-full min-h-screen p-2">
       <SidebarTrigger className="md:hidden" />
@@ -53,13 +55,16 @@ export default async function Page(props: {
             <FileSearch />
           </div>
         </div>
-
         <Breadcrumbs
           currentFolderId={currentFolderId}
           userId={userId}
           fileViewPage="files"
         />
-        <FileView filesPromise={storedFiles} fileViewPage="files" />
+        <FileView
+          filesPromise={storedFiles}
+          fileViewPage="files"
+          userRootFolder={userRootFolder[0].id}
+        />
         <FilePagination currentPage={page} totalPages={totalPages} />
       </div>
     </div>

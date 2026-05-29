@@ -101,6 +101,7 @@ export async function trashFilesAction(ids: string[]) {
   if (!userId) {
     redirect('/sign-in');
   }
+  
   if (!Array.isArray(ids) || !ids.length) {
     return {
       ok: false as const,

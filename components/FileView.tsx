@@ -29,9 +29,11 @@ import { Button } from './ui/button';
 export default function FileView({
   filesPromise,
   fileViewPage,
+  userRootFolder,
 }: {
   filesPromise: Promise<FileItem[]>;
   fileViewPage: 'files' | 'trash';
+  userRootFolder: string;
 }) {
   const { state, select } = useSelection();
   const [keyboardDeleteOpen, setKeyboardDeleteOpen] = useState(false);
@@ -168,10 +170,10 @@ export default function FileView({
             </Button>
             <div
               className={`transition-all duration-300 ease-out
-            ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}
-          `}
+                ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}
+              `}
             >
-              {state.selectedIds.size >= 1 && (
+              {isVisible && (
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   <span className="shrink-0 text-sm">
                     {state.selectedIds.size} file(s) selected
@@ -180,6 +182,7 @@ export default function FileView({
                     fileViewPage={fileViewPage}
                     ids={selectedIds}
                     downloadsAsArchive={selectedDownloadsAsArchive}
+                    userRootFolder={userRootFolder}
                   />
                 </div>
               )}
@@ -189,9 +192,9 @@ export default function FileView({
           <div className="hidden overflow-x-auto lg:block">
             <div
               className="
-            grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
-            gap-4 px-3 py-2 text-xs font-medium text-muted-foreground border-b
-          "
+                grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
+                gap-4 px-3 py-2 text-xs font-medium text-muted-foreground border-b
+              "
             >
               <div>Name</div>
               <div>Type</div>
@@ -199,7 +202,6 @@ export default function FileView({
               <div>
                 {fileViewPage === 'files' ? 'Uploaded at' : 'Original location'}
               </div>
-              <div />
             </div>
 
             {files.map((file) => (
@@ -217,6 +219,8 @@ export default function FileView({
                       ? selectedDownloadsAsArchive
                       : file.is_dir
                   }
+                  userRootFolder={userRootFolder}
+                  
                 >
                   <div
                     title={file.name}
@@ -237,11 +241,11 @@ export default function FileView({
                       select(file.id, 'right', orderedIds);
                     }}
                     className={`
-                  grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
-                  gap-4 items-center px-3 py-3 transition
-                  hover:bg-muted/50 select-none border-b
-                  ${state.selectedIds.has(file.id) ? 'bg-muted' : ''}
-                `}
+                      grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
+                      gap-4 items-center px-3 py-3 transition
+                      hover:bg-muted/50 select-none border-b
+                      ${state.selectedIds.has(file.id) ? 'bg-muted' : ''}
+                    `}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {file.is_dir ? (
@@ -258,9 +262,9 @@ export default function FileView({
                         title={file.name}
                         onClick={(e) => e.stopPropagation()}
                         className="
-                      truncate min-w-0 overflow-hidden
-                      text-sm font-medium hover:underline
-                    "
+                          truncate min-w-0 overflow-hidden
+                          text-sm font-medium hover:underline
+                        "
                       >
                         {file.name}
                       </Link>
@@ -297,6 +301,7 @@ export default function FileView({
                             ? selectedDownloadsAsArchive
                             : file.is_dir
                         }
+                        userRootFolder={userRootFolder}
                         onSelectItem={() =>
                           select(file.id, 'click', orderedIds)
                         }
@@ -372,6 +377,7 @@ export default function FileView({
                           : file.is_dir
                       }
                       onSelectItem={() => select(file.id, 'click', orderedIds)}
+                      userRootFolder={userRootFolder}
                     />
                   </div>
                 </div>

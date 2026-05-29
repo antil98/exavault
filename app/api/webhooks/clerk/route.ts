@@ -1,8 +1,13 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import type { WebhookEvent } from '@clerk/nextjs/server';
-import { createUserRootFolder, deleteForever, getAllUserFiles } from '@/lib/data';
+import {
+  createUserRootFolder,
+  deleteForever,
+  getAllUserFiles,
+} from '@/lib/data';
 import { del } from '@vercel/blob';
+import { redirect } from 'next/navigation';
 
 const webhookSecret = process.env.CLERK_WEBHOOK_SECRET!;
 
@@ -37,7 +42,7 @@ export async function POST(req: Request) {
       const userId = event.data.id;
 
       if (!userId) {
-        throw new Error('Unauthorized');
+        redirect('/sign-in');
       }
 
       await createUserRootFolder(userId);
@@ -49,10 +54,10 @@ export async function POST(req: Request) {
       const userId = event.data.id;
 
       if (!userId) {
-        throw new Error('Unauthorized');
+        redirect('/sign-in');
       }
 
-      const items = await getAllUserFiles(userId)
+      const items = await getAllUserFiles(userId);
       const ids = items.map((item) => item.id);
 
       await Promise.allSettled(

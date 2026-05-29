@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { handleUpload } from '@vercel/blob/client';
 import { uploadFile } from '../../../lib/data';
+import { redirect } from 'next/navigation';
 
 const allowedContentTypes = [
   'image/*',
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
         const { userId } = await auth();
 
         if (!userId) {
-          throw new Error('Unauthorized');
+          redirect('/sign-in');
         }
 
         const parsedPayload = JSON.parse(clientPayload ?? '{}');

@@ -16,23 +16,23 @@ import { moveFilesAction } from '@/app/actions/files';
 import { FileItem } from '@/types/file-type';
 import { ArrowLeft, Folder, LoaderCircle } from 'lucide-react';
 
-const ROOT_FOLDER_ID = '2bcecc5f-089b-42b7-91fe-307ff392dea2';
-
 export default function MoveDialog({
   open,
   onOpenChange,
   ids,
+  userRootFolder,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   ids: string[];
+  userRootFolder: string;
 }) {
-  const [currentFolderId, setCurrentFolderId] = useState(ROOT_FOLDER_ID);
+  const [currentFolderId, setCurrentFolderId] = useState(userRootFolder);
   const [folderPath, setFolderPath] = useState([
-    { id: ROOT_FOLDER_ID, name: 'Home' },
+    { id: userRootFolder, name: 'Home' },
   ]);
   const [folders, setFolders] = useState<FileItem[]>([]);
-  const [selectedFolderId, setSelectedFolderId] = useState(ROOT_FOLDER_ID);
+  const [selectedFolderId, setSelectedFolderId] = useState(userRootFolder);
   const [error, setError] = useState('');
   const [loadingFolders, setLoadingFolders] = useState(false);
   const [moving, setMoving] = useState(false);
@@ -41,9 +41,9 @@ export default function MoveDialog({
   useEffect(() => {
     if (!open) return;
 
-    setCurrentFolderId(ROOT_FOLDER_ID);
-    setFolderPath([{ id: ROOT_FOLDER_ID, name: 'Home' }]);
-    setSelectedFolderId(ROOT_FOLDER_ID);
+    setCurrentFolderId(userRootFolder);
+    setFolderPath([{ id: userRootFolder, name: 'Home' }]);
+    setSelectedFolderId(userRootFolder);
     setError('');
   }, [open]);
 

@@ -7,7 +7,7 @@ export function updateSelection({
   itemsOrdered,
 }: {
   id: string;
-  type: 'click' | 'right' | 'ctrl' | 'shift' | 'toggle-all';
+  type: 'click' | 'right' | 'ctrl' | 'shift' | 'toggle-all' | 'clear';
   state: SelectionState;
   itemsOrdered: string[];
 }) {
@@ -70,6 +70,14 @@ export function updateSelection({
     return {
       selectedIds: newSelected,
       lastSelectedId: id,
+    };
+  }
+
+  if (type === 'clear') {
+    newSelected.clear();
+    return {
+      selectedIds: newSelected,
+      lastSelectedId: null,
     };
   }
 
