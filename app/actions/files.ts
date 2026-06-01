@@ -14,7 +14,7 @@ import {
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
-export async function renameFileAction(id: string, newName: string) {7
+export async function renameFileAction(id: string, newName: string) {
   const { userId } = await auth();
   
   if (!userId) {

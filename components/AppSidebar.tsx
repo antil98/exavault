@@ -1,6 +1,6 @@
 'use client';
 
-import { Show, SignOutButton, UserButton, useUser } from '@clerk/nextjs';
+import { Show, UserButton, useUser } from '@clerk/nextjs';
 import {
   Sidebar,
   SidebarContent,
@@ -21,8 +21,6 @@ import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import CreateFolder from './CreateFolder';
 import FileUpload from './FileUpload';
-import { buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
   const { isMobile, setOpenMobile } = useSidebar();
