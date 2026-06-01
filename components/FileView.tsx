@@ -152,14 +152,13 @@ export default function FileView({
       ) : (
         ''
       )}
-
       {files.length === 0 ? (
         <div className="p-30 text-center">
           <p className="text-gray-600">The folder is empty</p>
         </div>
       ) : (
         <>
-          <div className="h-10 my-2 flex items-center  gap-3 py-2 my-5 sm:gap-3 sm:py-0">
+          <div className="h-10 my-2 flex items-center gap-3 py-2 my-5 sm:gap-3 sm:py-0">
             <Button
               variant="secondary"
               onClick={() => select('', 'toggle-all', orderedIds)}
@@ -189,7 +188,6 @@ export default function FileView({
               )}
             </div>
           </div>
-
           <div className="hidden overflow-x-auto lg:block">
             <div
               className="
@@ -204,7 +202,6 @@ export default function FileView({
                 {fileViewPage === 'files' ? 'Uploaded at' : 'Original location'}
               </div>
             </div>
-
             {files.map((file) => (
               <div key={file.id}>
                 <FileActionsMenu
@@ -254,7 +251,6 @@ export default function FileView({
                       ) : (
                         <File className="w-4 h-4 shrink-0" />
                       )}
-
                       <Link
                         href={
                           file.is_dir ? `/${fileViewPage}/${file.id}` : file.url
@@ -270,21 +266,17 @@ export default function FileView({
                         {file.name}
                       </Link>
                     </div>
-
                     <div className="text-xs text-muted-foreground">
                       {file.file_type ? file.file_type : 'Folder'}
                     </div>
-
                     <div className="text-xs text-muted-foreground whitespace-nowrap">
                       {(file.size / 1024).toFixed(1)} KB
                     </div>
-
                     <div className="text-xs text-muted-foreground truncate">
                       {fileViewPage === 'files'
                         ? new Date(file.created_at).toLocaleDateString()
                         : file.original_location}
                     </div>
-
                     <div
                       className="flex justify-end"
                       onClick={(e) => e.stopPropagation()}
@@ -314,7 +306,6 @@ export default function FileView({
               </div>
             ))}
           </div>
-
           <div className="lg:hidden space-y-1">
             {files.map((file) => {
               const isSelected = state.selectedIds.has(file.id);
@@ -336,7 +327,6 @@ export default function FileView({
                     ) : (
                       <File className="w-4 h-4 shrink-0 mt-1" />
                     )}
-
                     <div className="flex flex-col min-w-0">
                       <Link
                         href={
@@ -349,9 +339,8 @@ export default function FileView({
                       >
                         {file.name}
                       </Link>
-
                       <div className="flex min-w-0 gap-3 text-xs text-muted-foreground mt-1">
-                        <span>{file.is_dir ? 'Folder' : 'File'}</span>
+                        <span>{file.file_type ? file.file_type : 'Folder'}</span>
                         <span className="shrink-0">
                           {(file.size / 1024).toFixed(1)} KB
                         </span>
@@ -363,7 +352,6 @@ export default function FileView({
                       </div>
                     </div>
                   </div>
-
                   <div onClick={(e) => e.stopPropagation()}>
                     <FileActionsMenu
                       menuType="dropdown"
@@ -387,7 +375,6 @@ export default function FileView({
               );
             })}
           </div>
-
           <AlertDialog open={emptyTrashOpen} onOpenChange={setEmptyTrashOpen}>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -410,7 +397,6 @@ export default function FileView({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-
           <AlertDialog
             open={keyboardDeleteOpen}
             onOpenChange={setKeyboardDeleteOpen}

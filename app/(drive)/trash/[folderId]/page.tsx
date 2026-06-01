@@ -1,5 +1,5 @@
 import FileView from '@/components/FileView';
-import { getFilesByParent, getTotalPages } from '@/lib/data';
+import { getFilesByParent, getTotalPages, getUserRootFolder } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Trash2 } from 'lucide-react';
@@ -16,7 +16,7 @@ export default async function Page(props: {
   const searchParams = await props.searchParams;
 
   const currentFolderId = pageParams.folderId;
-  
+
   const { userId } = await auth();
 
   if (!userId) {
@@ -40,8 +40,10 @@ export default async function Page(props: {
     searchQuery,
   );
 
+  const userRootFolder = await getUserRootFolder(userId);
+
   return (
-    <div className="w-full min-h-screen p-2">
+    <div className="w-full min-h-screen">
       <SidebarTrigger className="md:hidden" />
       <div className="space-y-6 p-4 md:p-6">
         <div className="space-y-5">
@@ -58,7 +60,11 @@ export default async function Page(props: {
           userId={userId}
           fileViewPage="trash"
         />
-        <FileView filesPromise={trashedFiles} fileViewPage="trash" />
+        <FileView
+          filesPromise={trashedFiles}
+          fileViewPage="trash"
+          userRootFolder={userRootFolder[0].id}
+        />
         <FilePagination currentPage={page} totalPages={totalPages} />
       </div>
     </div>

@@ -80,14 +80,16 @@ export default function FileUpload({
         tooltip={uploading ? 'Uploading...' : buttonLabel}
         onClick={handleClick}
         disabled={uploading}
-        className="h-10 gap-2.5 rounded-lg border border-sidebar-border/80 bg-background/80 px-3 font-medium shadow-xs hover:bg-background hover:shadow-sm group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-2! group-data-[collapsible=icon]:shadow-none [&>svg]:text-primary"
+        className="
+          h-10 gap-2.5 rounded-lg border border-sidebar-border/80 bg-background/80 px-3 font-medium shadow-xs 
+          hover:bg-background hover:shadow-sm 
+        "
       >
         {uploading ? <LoaderCircle className="animate-spin" /> : <Upload />}
         <span className="group-data-[collapsible=icon]:hidden">
           {uploading ? 'Uploading...' : buttonLabel}
         </span>
       </SidebarMenuButton>
-
       <input
         ref={inputRef}
         type="file"
