@@ -13,10 +13,10 @@ export default async function Home() {
 
   return (
     <main className="flex min-h-screen flex-col md:flex-row">
-      <section className="w-full md:w-[60%] bg-primary text-white flex items-center justify-center p-10">
+      <section className="w-full md:w-[60%] bg-primary text-primary-foreground flex items-center justify-center p-10">
         <div className="max-w-xl">
           <h1 className="text-5xl font-bold">Exavault</h1>
-          <p className="mt-6 text-lg text-white/80">
+          <p className="mt-6 text-lg text-muted-foreground">
             A modern file manager built with Next.js, React and Tailwind CSS.
           </p>
         </div>

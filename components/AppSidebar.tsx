@@ -46,12 +46,14 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
       <SidebarRail />
       <SidebarHeader>
         <div className="flex h-14 flex-row items-center justify-between px-3 group-data-[collapsible=icon]:h-12 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
-          <div className="flex flex-row gap-2 items-center group-data-[collapsible=icon]:hidden">
+          <Link
+            href="/"
+            className="text-xl flex flex-row gap-2 items-center group-data-[collapsible=icon]:hidden"
+          >
             <img src="/icon.png" alt="Exavault logo" width="30" />
-            <span className="text-xl group-data-[collapsible=icon]:hidden">
-              Exavault
-            </span>
-          </div>
+            Exavault
+          </Link>
+
           <div className="flex shrink-0 items-center gap-2">
             <div title="Collapse/Expand sidebar">
               <SidebarTrigger />
@@ -130,7 +132,9 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
         <Show when="signed-in">
           <div className="flex items-center gap-3">
             <UserButton />
-            <span className="group-data-[collapsible=icon]:hidden">{user?.firstName}</span>
+            <span className="group-data-[collapsible=icon]:hidden">
+              {user?.firstName}
+            </span>
           </div>
         </Show>
       </SidebarFooter>

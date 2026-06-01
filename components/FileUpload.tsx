@@ -82,7 +82,7 @@ export default function FileUpload({
         disabled={uploading}
         className="
           h-10 gap-2.5 rounded-lg border border-sidebar-border/80 bg-background/80 px-3 font-medium shadow-xs 
-          hover:bg-background hover:shadow-sm 
+          hover:bg-background hover:text-foreground hover:shadow-sm 
         "
       >
         {uploading ? <LoaderCircle className="animate-spin" /> : <Upload />}

@@ -1,17 +1,18 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import { shadcn } from '@clerk/ui/themes';
 import type { Metadata } from 'next';
-import { Roboto, Playfair_Display, Fira_Code } from 'next/font/google';
+import { Poppins, Lora, Fira_Code } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from 'sonner';
 
-const fontSans = Roboto({
+const fontSans = Poppins({
   subsets: ['latin'],
   variable: '--font-sans',
+  weight: ['400', '500', '600', '700'],
 });
 
-const fontSerif = Playfair_Display({
+const fontSerif = Lora({
   subsets: ['latin'],
   variable: '--font-serif',
 });
@@ -35,19 +36,16 @@ export default function RootLayout({
     <html
       lang="en"
       className={cn(
-        'dark',
-        'h-full',
-        'antialiased',
+        'h-full antialiased',
         fontSans.variable,
         fontSerif.variable,
         fontMono.variable,
-        'font-sans',
-        'scrollbar-gutter-stable',
+        'font-sans'
       )}
     >
-      <body className="min-h-full flex flex-col select-none">
+      <body className="min-h-full flex flex-col select-none dark">
         <ClerkProvider appearance={{ theme: shadcn }}>
-          <main>{children}</main>
+          <main className="flex-1">{children}</main>
           <Toaster theme="dark" richColors position="bottom-right" />
         </ClerkProvider>
       </body>
