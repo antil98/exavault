@@ -6,8 +6,8 @@ import { ArrowRight, Folder } from 'lucide-react';
 
 export default async function Home() {
   return (
-    <main className="flex min-h-screen flex-col md:flex-row bg-primary">
-      <section className="w-full md:w-[60%] bg-primary text-primary-foreground flex items-center justify-center p-8">
+    <main className="flex h-screen flex-col md:flex-row bg-primary">
+      <section className="w-full md:w-[60%] bg-primary text-primary-foreground flex items-center justify-center p-8 md:p-16">
         <div className="w-full max-w-4xl">
           <h1 className="text-3xl font-bold text-secondary mb-6">Exavault</h1>
           <div className="max-w-2xl">
@@ -24,7 +24,7 @@ export default async function Home() {
           </div>
           <div className="mt-10 hidden md:block overflow-hidden">
             <Image
-              src="/app-preview.png"
+              src="/preview.png"
               alt="App preview"
               width={1200}
               height={800}
@@ -33,8 +33,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
-      <section className="w-full md:w-[40%] flex items-center justify-center p-6 rounded-t-xl md:rounded-none bg-background">
-        <div className="w-full max-w-sm">
+      <section className="w-full h-full  md:w-[40%] flex items-center justify-center p-6 md:p-12 rounded-t-xl md:rounded-none bg-background">
+        <div className="w-full  max-w-sm">
           <div className="flex flex-col gap-4 items-center justify-center">
             <div className="p-4 rounded-lg bg-primary">
               <Folder className="fill-foreground text-foreground" />
