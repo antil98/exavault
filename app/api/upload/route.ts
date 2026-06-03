@@ -1,7 +1,6 @@
-import { auth } from '@clerk/nextjs/server';
 import { handleUpload } from '@vercel/blob/client';
 import { uploadFile } from '../../../lib/data';
-import { redirect } from 'next/navigation';
+import requireAuth from '@/lib/auth';
 
 const allowedContentTypes = [
   'image/*',
@@ -33,11 +32,7 @@ export async function POST(req: Request) {
       body,
       request: req,
       onBeforeGenerateToken: async (_pathname, clientPayload) => {
-        const { userId } = await auth();
-
-        if (!userId) {
-          redirect('/sign-in');
-        }
+        const userId = await requireAuth();
 
         const parsedPayload = JSON.parse(clientPayload ?? '{}');
 

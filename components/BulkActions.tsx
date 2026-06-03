@@ -90,6 +90,7 @@ export default function BulkActions({
       toast.error('Failed to move file(s) to trash', { id: toastId });
     } finally {
       setBusyAction(null);
+      onClearSelection();
     }
   }
 
@@ -113,6 +114,7 @@ export default function BulkActions({
       toast.error('Failed to restore file(s)', { id: toastId });
     } finally {
       setBusyAction(null);
+      onClearSelection();
     }
   }
 
@@ -137,6 +139,7 @@ export default function BulkActions({
       toast.error('Delete failed', { id: toastId });
     } finally {
       setBusyAction(null);
+      onClearSelection();
     }
   }
 

@@ -1,20 +1,14 @@
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
 import { getUserRootFolder } from '@/lib/data';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
+import requireAuth from '@/lib/auth';
 
 export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect('/sign-in');
-  }
-
+  const userId = await requireAuth();
   const rootFolderId = await getUserRootFolder(userId);
 
   return (

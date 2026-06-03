@@ -1,68 +1,76 @@
 import Link from 'next/link';
-import { Show, SignOutButton } from '@clerk/nextjs';
-import { auth, currentUser } from '@clerk/nextjs/server';
-import { getUserRootFolder } from '@/lib/data';
-import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ArrowRight, Folder } from 'lucide-react';
 
 export default async function Home() {
-  const { userId } = await auth();
-  const user = await currentUser();
-  const userRootFolder = await getUserRootFolder(userId!);
-
   return (
-    <main className="flex min-h-screen flex-col md:flex-row">
-      <section className="w-full md:w-[60%] bg-primary text-primary-foreground flex items-center justify-center p-10">
-        <div className="max-w-xl">
-          <h1 className="text-5xl font-bold">Exavault</h1>
-          <p className="mt-6 text-lg text-muted-foreground">
-            A modern file manager built with Next.js, React and Tailwind CSS.
-          </p>
+    <main className="flex min-h-screen flex-col md:flex-row bg-primary">
+      <section className="w-full md:w-[60%] bg-primary text-primary-foreground flex items-center justify-center p-8">
+        <div className="w-full max-w-4xl">
+          <h1 className="text-3xl font-bold text-secondary mb-6">Exavault</h1>
+          <div className="max-w-2xl">
+            <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+              File management
+              <br />
+              without the clutter.
+            </h2>
+            <p className="mt-5 text-lg text-primary-foreground/80">
+              A modern file manager built with Next.js, React, Tailwind CSS,
+              PostgreSQL and Vercel Blob. Deployed to Vercel and secured by
+              Clerk.
+            </p>
+          </div>
+          <div className="mt-10 hidden md:block overflow-hidden">
+            <Image
+              src="/app-preview.png"
+              alt="App preview"
+              width={1200}
+              height={800}
+              className="rounded-2xl border border-primary-foreground/10 shadow-2xl"
+            />
+          </div>
         </div>
       </section>
-      <section className="w-full md:w-[40%] flex items-center justify-center p-10">
+      <section className="w-full md:w-[40%] flex items-center justify-center p-6 rounded-t-xl md:rounded-none bg-background">
         <div className="w-full max-w-sm">
-          <Show when="signed-out">
-            <div className="flex flex-col gap-4">
-              <h2 className="text-3xl font-semibold">Welcome</h2>
-              <p className="text-muted-foreground">Sign in to get started.</p>
-              <Link
-                href="/sign-in"
-                className="rounded-lg bg-primary px-4 py-3 text-center text-white font-medium hover:opacity-90 transition"
-              >
-                Sign In
-              </Link>
+          <div className="flex flex-col gap-4 items-center justify-center">
+            <div className="p-4 rounded-lg bg-primary">
+              <Folder className="fill-foreground text-foreground" />
             </div>
-          </Show>
-          {userId && (
-            <Show when="signed-in">
-              <div className="flex flex-col items-center gap-3 text-center">
-                <div>
-                  <h2 className="text-3xl font-semibold">Welcome back</h2>
-                  <p className="text-muted-foreground mt-2">
-                    You&apos;re signed in as {user?.firstName}
-                  </p>
-                </div>
-                <Link href={`/files/${userRootFolder[0].id}`} className="w-full h-12">
-                  <Button variant="default" className="w-full h-12">
-                    Go to your files
-                  </Button>
-                </Link>
-                <SignOutButton>
-                  <button
-                    className={cn(
-                      buttonVariants({ variant: 'ghost' }),
-                      'w-full',
-                      'h-12',
-                    )}
-                  >
-                    Sign out
-                  </button>
-                </SignOutButton>
-              </div>
-            </Show>
-          )}
+            <h2 className="text-3xl font-semibold">Welcome</h2>
+            <p className="text-muted-foreground">Sign in to get started.</p>
+            <Link
+              href="/sign-in"
+              className="w-full h-13 flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-center text-white font-medium hover:opacity-90 transition"
+            >
+              Get started
+              <ArrowRight />
+            </Link>
+            <div className="w-full flex items-center gap-4">
+              <hr className="w-[45%] my-6 border-t border-secondary" />
+              <p>or</p>
+              <hr className="w-[45%] my-6 border-t border-secondary" />
+            </div>
+            <Link
+              href="/sign-up"
+              className={cn(
+                buttonVariants({ variant: 'outline' }),
+                'w-full',
+                'h-13',
+                'text-md',
+              )}
+            >
+              Sign up
+            </Link>
+            <p className="text-center">
+              Already have an account?{' '}
+              <Link href="/sign-in" className="text-primary hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </div>
         </div>
       </section>
     </main>

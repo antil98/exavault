@@ -1,8 +1,6 @@
 import { sql } from '@/lib/db';
 import { FileItem } from '@/types/file-type';
 import { getUniqueName } from './utils';
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
 
 export async function createUserRootFolder(userId: string) {
   await sql`
@@ -533,13 +531,7 @@ export async function moveFiles({
 }
 
 export async function trashFiles(ids: string[], ownerId: string) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect('/sign-in');
-  }
-
-  const rootFolderId = await getUserRootFolder(userId);
+  const rootFolderId = await getUserRootFolder(ownerId);
 
   await sql`
     UPDATE files AS f
@@ -563,13 +555,7 @@ export async function trashFiles(ids: string[], ownerId: string) {
 }
 
 export async function restoreFiles(ids: string[], ownerId: string) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect('/sign-in');
-  }
-
-  const rootFolderId = await getUserRootFolder(userId);
+  const rootFolderId = await getUserRootFolder(ownerId);
   
   await sql`
     UPDATE files AS f

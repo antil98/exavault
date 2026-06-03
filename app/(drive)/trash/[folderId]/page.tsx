@@ -5,8 +5,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Trash2 } from 'lucide-react';
 import { FileSearch } from '@/components/FileSearch';
 import FilePagination from '@/components/FilePagination';
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+import requireAuth from '@/lib/auth';
 
 export default async function Page(props: {
   params: { folderId: string };
@@ -17,11 +16,7 @@ export default async function Page(props: {
 
   const currentFolderId = pageParams.folderId;
 
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect('/sign-in');
-  }
+  const userId = await requireAuth();
 
   const searchQuery = searchParams?.search || '';
   const page = Number(searchParams?.page) || 1;

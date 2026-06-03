@@ -1,13 +1,8 @@
+import requireAuth from '@/lib/auth';
 import { getFoldersByParent, getUserRootFolder } from '@/lib/data';
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
 
 export async function GET(req: Request) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect('/sign-in');
-  }
+  const userId = await requireAuth();
 
   const rootFolderId = await getUserRootFolder(userId);
 
