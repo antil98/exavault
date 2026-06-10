@@ -22,13 +22,13 @@ export default async function Home() {
               Clerk.
             </p>
           </div>
-          <div className="mt-10 hidden md:block overflow-hidden">
+          <div className="mt-10 hidden md:block ">
             <Image
               src="/preview.png"
               alt="App preview"
               width={1200}
               height={800}
-              className="rounded-2xl border border-primary-foreground/10 shadow-2xl"
+              className="rounded-2xl border border-primary-foreground/10 shadow-2xl w-[80%]"
             />
           </div>
         </div>
