@@ -192,7 +192,7 @@ export default function FileView({
             <div
               className="
                 grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
-                gap-4 px-3 py-2 text-xs font-medium text-muted-foreground border-b
+                gap-4 px-3 py-2 font-medium text-muted-foreground border-b
               "
             >
               <div>Name</div>
@@ -266,13 +266,13 @@ export default function FileView({
                         {file.name}
                       </Link>
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-sm text-muted-foreground truncate">
                       {file.file_type ? file.file_type : 'Folder'}
                     </div>
-                    <div className="text-xs text-muted-foreground whitespace-nowrap">
+                    <div className="text-sm text-muted-foreground truncate">
                       {(file.size / 1024).toFixed(1)} KB
                     </div>
-                    <div className="text-xs text-muted-foreground truncate">
+                    <div className="text-sm text-muted-foreground truncate">
                       {fileViewPage === 'files'
                         ? new Date(file.created_at).toLocaleDateString()
                         : file.original_location}
@@ -306,7 +306,7 @@ export default function FileView({
               </div>
             ))}
           </div>
-          <div className="lg:hidden space-y-1">
+          <div className="lg:hidden space-y-2">
             {files.map((file) => {
               const isSelected = state.selectedIds.has(file.id);
 
@@ -317,11 +317,11 @@ export default function FileView({
                     select(file.id, 'ctrl', orderedIds);
                   }}
                   onContextMenu={() => select(file.id, 'right', orderedIds)}
-                  className={`flex items-start justify-between pl-3 py-3 rounded-md bg-foreground/10 ${
-                    isSelected ? 'bg-muted' : ''
+                  className={`flex items-start justify-between pl-3 py-3 rounded-md bg-muted ${
+                    isSelected ? 'bg-foreground/10' : ''
                   }`}
                 >
-                  <div className="flex items-start gap-3 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     {file.is_dir ? (
                       <Folder className="w-8 h-8 shrink-0 mt-1 fill-foreground" />
                     ) : (
@@ -334,17 +334,19 @@ export default function FileView({
                         }
                         target={file.is_dir ? '_self' : '_blank'}
                         onClick={(e) => e.stopPropagation()}
-                        className="font-medium truncate hover:underline bg-foreground/10 max-w-fit"
+                        className="font-medium truncate max-w-fit"
                         title={file.name}
                       >
                         {file.name}
                       </Link>
-                      <div className="flex min-w-0 gap-3 text-xs text-muted-foreground mt-1">
-                        <span>{file.file_type ? file.file_type : 'Folder'}</span>
+                      <div className="flex flex-col min-w-0 text-sm text-muted-foreground mt-1">
+                        <span className=" truncate">
+                          {file.file_type ? file.file_type : 'Folder'}
+                        </span>
                         <span className="shrink-0">
                           {(file.size / 1024).toFixed(1)} KB
                         </span>
-                        <span className="min-w-0 truncate">
+                        <span>
                           {fileViewPage === 'files'
                             ? new Date(file.created_at).toLocaleDateString()
                             : file.original_location}
