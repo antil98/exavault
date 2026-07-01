@@ -163,9 +163,11 @@ export default function FileView({
               variant="secondary"
               onClick={() => select('', 'toggle-all', orderedIds)}
             >
-              {state.selectedIds.size === files.length
+              {
+                state.selectedIds.size === files.length
                 ? 'Cancel selection'
-                : 'Select all'}
+                : 'Select all'
+              }
             </Button>
             <div
               className={`transition-all duration-300 ease-out
@@ -241,8 +243,8 @@ export default function FileView({
                     className={`
                       grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
                       gap-4 items-center px-3 py-3 transition
-                      hover:bg-muted/50 border-b
-                      ${state.selectedIds.has(file.id) ? 'bg-muted' : ''}
+                      border-b border-border hover:bg-card/50
+                      ${state.selectedIds.has(file.id) ? 'bg-card' : ''}
                     `}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -306,10 +308,8 @@ export default function FileView({
               </div>
             ))}
           </div>
-          <div className="lg:hidden space-y-2">
+          <div className="lg:hidden space-y-1">
             {files.map((file) => {
-              const isSelected = state.selectedIds.has(file.id);
-
               return (
                 <div
                   key={file.id}
@@ -317,9 +317,8 @@ export default function FileView({
                     select(file.id, 'ctrl', orderedIds);
                   }}
                   onContextMenu={() => select(file.id, 'right', orderedIds)}
-                  className={`flex items-start justify-between pl-3 py-3 rounded-md bg-muted ${
-                    isSelected ? 'bg-foreground/10' : ''
-                  }`}
+                  className={`flex items-start justify-between pl-3 py-3 rounded-md bg-black/30
+                    ${state.selectedIds.has(file.id) ? 'bg-card ' : ''}`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {file.is_dir ? (
