@@ -30,8 +30,8 @@ export async function getUserRootFolder(userId: string) {
     SELECT id
     FROM files
     WHERE owner_id = ${userId}
-    AND parent_id IS NULL
-    AND is_dir = true
+      AND parent_id IS NULL
+      AND is_dir = true
     LIMIT 1
   `;
 }

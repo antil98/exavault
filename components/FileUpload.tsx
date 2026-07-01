@@ -60,12 +60,25 @@ export default function FileUpload({
 
       await new Promise((res) => setTimeout(res, 800));
       router.refresh();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Upload failed:', err);
 
-      toast.error('Upload failed. Please try again.', {
-        id: uploadToast,
-      });
+      const message = err?.message || '';
+      console.log('Error message:', message);
+
+      if (message.includes('Content type mismatch')) {
+        toast.error("File type isn't allowed.", {
+          id: uploadToast,
+        });
+        return;
+      }
+
+      if (message.includes('Content Too Large') || err?.status === 413) {
+        toast.error('File is too large to upload.', {
+          id: uploadToast,
+        });
+        return;
+      }
     } finally {
       setUploading(false);
       if (inputRef.current) {

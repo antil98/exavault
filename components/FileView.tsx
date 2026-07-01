@@ -247,9 +247,9 @@ export default function FileView({
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {file.is_dir ? (
-                        <Folder className="w-4 h-4 shrink-0" />
+                        <Folder className="w-8 h-8 shrink-0 fill-foreground" />
                       ) : (
-                        <File className="w-4 h-4 shrink-0" />
+                        <File className="w-8 h-8 shrink-0" />
                       )}
                       <Link
                         href={
@@ -317,15 +317,15 @@ export default function FileView({
                     select(file.id, 'ctrl', orderedIds);
                   }}
                   onContextMenu={() => select(file.id, 'right', orderedIds)}
-                  className={`flex items-start justify-between pl-3 py-3 rounded-md bg-background/50 ${
+                  className={`flex items-start justify-between pl-3 py-3 rounded-md bg-foreground/10 ${
                     isSelected ? 'bg-muted' : ''
                   }`}
                 >
                   <div className="flex items-start gap-3 min-w-0">
                     {file.is_dir ? (
-                      <Folder className="w-4 h-4 shrink-0 mt-1" />
+                      <Folder className="w-8 h-8 shrink-0 mt-1 fill-foreground" />
                     ) : (
-                      <File className="w-4 h-4 shrink-0 mt-1" />
+                      <File className="w-8 h-8 shrink-0 mt-1" />
                     )}
                     <div className="flex flex-col min-w-0">
                       <Link
@@ -334,7 +334,7 @@ export default function FileView({
                         }
                         target={file.is_dir ? '_self' : '_blank'}
                         onClick={(e) => e.stopPropagation()}
-                        className="font-medium truncate hover:underline"
+                        className="font-medium truncate hover:underline bg-foreground/10 max-w-fit"
                         title={file.name}
                       >
                         {file.name}

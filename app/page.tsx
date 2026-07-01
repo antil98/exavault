@@ -3,8 +3,18 @@ import Image from 'next/image';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ArrowRight, Folder } from 'lucide-react';
+import { getUserRootFolder } from '@/lib/data';
+import { auth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
 
 export default async function Home() {
+  const { userId } = await auth();
+
+  if (userId) {
+    const userRootFolder = await getUserRootFolder(userId);
+    redirect(`/files/${userRootFolder[0].id}`);
+  }
+
   return (
     <main className="flex h-screen flex-col md:flex-row bg-primary">
       <section className="w-full md:w-[60%] bg-primary text-primary-foreground flex items-center justify-center p-8 md:p-16">
