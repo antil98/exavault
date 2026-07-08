@@ -157,9 +157,8 @@ export default function FileActionsMenu({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button
-                  variant="ghost"
-                  className={'rounded-full w-10 h-10'}
+                <div
+                  className="rounded-full w-fit p-3 hover:bg-black/50"
                   onClick={(e) => {
                     e.stopPropagation();
                     onSelectItem?.();
@@ -167,7 +166,7 @@ export default function FileActionsMenu({
                 />
               }
             >
-              <EllipsisVertical />
+              <EllipsisVertical className="w-6 h-6" />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-fit">
               {fileViewPage === 'files' ? (

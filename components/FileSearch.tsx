@@ -3,9 +3,9 @@
 import { ButtonGroup } from '@/components/ui/button-group';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
-
 
 export function FileSearch() {
   const searchParams = useSearchParams();
@@ -26,15 +26,18 @@ export function FileSearch() {
   }, 300);
 
   return (
-    <Field className="w-100 my-3">
+    <Field className="my-3">
       <ButtonGroup>
-        <Input
-          placeholder="Type to search..."
-          onChange={(event) => handleSearch(event.target.value)}
-          defaultValue={searchParams.get('search')?.toString()}
-        />
+        <div className="relative w-full">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Type to search..."
+            onChange={(event) => handleSearch(event.target.value)}
+            defaultValue={searchParams.get('search')?.toString()}
+          />
+        </div>
       </ButtonGroup>
     </Field>
   );
 }
-

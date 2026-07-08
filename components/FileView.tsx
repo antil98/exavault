@@ -163,11 +163,9 @@ export default function FileView({
               variant="secondary"
               onClick={() => select('', 'toggle-all', orderedIds)}
             >
-              {
-                state.selectedIds.size === files.length
+              {state.selectedIds.size === files.length
                 ? 'Cancel selection'
-                : 'Select all'
-              }
+                : 'Select all'}
             </Button>
             <div
               className={`transition-all duration-300 ease-out
@@ -190,10 +188,10 @@ export default function FileView({
               )}
             </div>
           </div>
-          <div className="hidden overflow-x-auto lg:block">
+          <div className="hidden overflow-x-auto md:block dark">
             <div
               className="
-                grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
+                grid min-w-[550px] grid-cols-[minmax(0,1fr)_80px_90px_100px_40px]
                 gap-4 px-3 py-2 font-medium text-muted-foreground border-b
               "
             >
@@ -241,7 +239,7 @@ export default function FileView({
                       select(file.id, 'right', orderedIds);
                     }}
                     className={`
-                      grid min-w-[634px] grid-cols-[minmax(220px,1fr)_80px_90px_140px_40px]
+                      grid min-w-[550px] grid-cols-[minmax(0,1fr)_80px_90px_100px_40px]
                       gap-4 items-center px-3 py-3 transition
                       border-b border-border hover:bg-card/50
                       ${state.selectedIds.has(file.id) ? 'bg-card' : ''}
@@ -308,7 +306,7 @@ export default function FileView({
               </div>
             ))}
           </div>
-          <div className="lg:hidden space-y-1">
+          <div className="block md:hidden space-y-1">
             {files.map((file) => {
               return (
                 <div
@@ -317,14 +315,14 @@ export default function FileView({
                     select(file.id, 'ctrl', orderedIds);
                   }}
                   onContextMenu={() => select(file.id, 'right', orderedIds)}
-                  className={`flex items-start justify-between pl-3 py-3 rounded-md bg-black/30
+                  className={`flex items-center justify-between pl-3 py-3 rounded-md bg-black/30
                     ${state.selectedIds.has(file.id) ? 'bg-card ' : ''}`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {file.is_dir ? (
-                      <Folder className="w-8 h-8 shrink-0 mt-1 fill-foreground" />
+                      <Folder className="w-8 h-8 shrink-0 fill-foreground" />
                     ) : (
-                      <File className="w-8 h-8 shrink-0 mt-1" />
+                      <File className="w-8 h-8 shrink-0" />
                     )}
                     <div className="flex flex-col min-w-0">
                       <Link
@@ -376,6 +374,7 @@ export default function FileView({
               );
             })}
           </div>
+
           <AlertDialog open={emptyTrashOpen} onOpenChange={setEmptyTrashOpen}>
             <AlertDialogContent>
               <AlertDialogHeader>

@@ -48,7 +48,7 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
         <div className="flex h-14 flex-row items-center justify-between px-3 group-data-[collapsible=icon]:h-12 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
           <Link
             href="/"
-            className="text-xl flex flex-row gap-2 items-center group-data-[collapsible=icon]:hidden"
+            className="text-xl font-semibold flex flex-row gap-2 items-center group-data-[collapsible=icon]:hidden"
           >
             <img src="/icon.png" alt="Exavault logo" width="30" />
             Exavault

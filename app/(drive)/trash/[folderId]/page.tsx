@@ -39,7 +39,6 @@ export default async function Page(props: {
 
   return (
     <div className="w-full min-h-screen">
-      <SidebarTrigger className="md:hidden" />
       <div className="space-y-6 p-4 md:p-6">
         <div className="space-y-5">
           <div className="flex flex-wrap justify-between">
