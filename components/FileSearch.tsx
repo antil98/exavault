@@ -26,12 +26,12 @@ export function FileSearch() {
   }, 300);
 
   return (
-    <Field className="my-3">
+    <Field className="max-w-lg mx-auto lg:mx-0">
       <ButtonGroup>
         <div className="relative w-full">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            className="pl-9"
+            className="pl-9 h-10 rounded-full"
             placeholder="Type to search..."
             onChange={(event) => handleSearch(event.target.value)}
             defaultValue={searchParams.get('search')?.toString()}

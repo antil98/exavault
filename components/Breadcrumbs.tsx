@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { FileItem } from '@/types/file-type';
 import { getFileById } from '@/lib/data';
+import { House } from 'lucide-react';
 
 export async function getBreadcrumbs(
   currentId: string,
@@ -46,20 +47,34 @@ export default async function Breadcrumbs({
           const isLast = index === breadcrumbs.length - 1;
 
           return (
-            <div key={item.id} className="flex items-center">
+            <div key={item.id} className="flex items-center gap-2">
               <BreadcrumbItem>
                 {isLast ? (
                   <BreadcrumbPage>
-                    {item.name === 'root' ? 'Home' : item.name}
+                    {item.name === 'root' ? (
+                      <div className="flex items-center gap-2 text-xl">
+                        <House className="w-5 h-5 text-accent" /> Home
+                      </div>
+                    ) : (
+                      <span className="text-xl">{item.name}</span>
+                    )}
                   </BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink href={`/${fileViewPage}/${item.id}`}>
-                    {item.name === 'root' ? 'Home' : item.name}
+                    {item.name === 'root' ? (
+                      <div className="flex items-center gap-2 text-xl">
+                        <House className="w-5 h-5 text-accent" /> 
+                        <BreadcrumbSeparator className="text-xl text-semibold">/</BreadcrumbSeparator>
+                        Home
+                      </div>
+                    ) : (
+                      <span className="text-xl">{item.name}</span>
+                    )}
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>
 
-              {!isLast && <BreadcrumbSeparator />}
+              {!isLast && <BreadcrumbSeparator className="text-xl text-semibold">/</BreadcrumbSeparator>}
             </div>
           );
         })}

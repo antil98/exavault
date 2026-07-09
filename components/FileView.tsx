@@ -174,7 +174,7 @@ export default function FileView({
             >
               {isVisible && (
                 <div className="flex flex-wrap items-center justify-end gap-2">
-                  <span className="shrink-0 text-sm">
+                  <span className="shrink-0">
                     {state.selectedIds.size} file(s) selected
                   </span>
                   <BulkActions
@@ -260,19 +260,19 @@ export default function FileView({
                         onClick={(e) => e.stopPropagation()}
                         className="
                           truncate min-w-0 overflow-hidden
-                          text-sm font-medium hover:underline
+                          font-medium hover:underline
                         "
                       >
                         {file.name}
                       </Link>
                     </div>
-                    <div className="text-sm text-muted-foreground truncate">
+                    <div className="text-muted-foreground truncate">
                       {file.file_type ? file.file_type : 'Folder'}
                     </div>
-                    <div className="text-sm text-muted-foreground truncate">
+                    <div className="text-muted-foreground truncate">
                       {(file.size / 1024).toFixed(1)} KB
                     </div>
-                    <div className="text-sm text-muted-foreground truncate">
+                    <div className="text-muted-foreground truncate">
                       {fileViewPage === 'files'
                         ? new Date(file.created_at).toLocaleDateString()
                         : file.original_location}
@@ -336,7 +336,7 @@ export default function FileView({
                       >
                         {file.name}
                       </Link>
-                      <div className="flex flex-col min-w-0 text-sm text-muted-foreground mt-1">
+                      <div className="flex flex-col min-w-0 text-muted-foreground mt-1">
                         <span className=" truncate">
                           {file.file_type ? file.file_type : 'Folder'}
                         </span>
