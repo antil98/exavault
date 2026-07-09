@@ -53,7 +53,11 @@ export default async function Breadcrumbs({
                   <BreadcrumbPage>
                     {item.name === 'root' ? (
                       <div className="flex items-center gap-2 text-xl">
-                        <House className="w-5 h-5 text-accent" /> Home
+                        <House className="w-5 h-5 text-accent" />{' '}
+                        <BreadcrumbSeparator className="text-xl font-semibold">
+                          /
+                        </BreadcrumbSeparator>
+                        Home
                       </div>
                     ) : (
                       <span className="text-xl">{item.name}</span>
@@ -63,8 +67,10 @@ export default async function Breadcrumbs({
                   <BreadcrumbLink href={`/${fileViewPage}/${item.id}`}>
                     {item.name === 'root' ? (
                       <div className="flex items-center gap-2 text-xl">
-                        <House className="w-5 h-5 text-accent" /> 
-                        <BreadcrumbSeparator className="text-xl text-semibold">/</BreadcrumbSeparator>
+                        <House className="w-5 h-5 text-accent" />
+                        <BreadcrumbSeparator className="text-xl font-semibold">
+                          /
+                        </BreadcrumbSeparator>
                         Home
                       </div>
                     ) : (
@@ -74,7 +80,11 @@ export default async function Breadcrumbs({
                 )}
               </BreadcrumbItem>
 
-              {!isLast && <BreadcrumbSeparator className="text-xl text-semibold">/</BreadcrumbSeparator>}
+              {!isLast && (
+                <BreadcrumbSeparator className="text-xl font-semibold">
+                  /
+                </BreadcrumbSeparator>
+              )}
             </div>
           );
         })}

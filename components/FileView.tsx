@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelection } from '@/hooks/useSelection';
 import { FileItem } from '@/types/file-type';
 import FileActionsMenu from './FileActionsMenu';
@@ -26,6 +26,17 @@ import {
 import BulkActions from './BulkActions';
 import { Button } from './ui/button';
 
+const MOBILE_LONG_PRESS_MS = 450;
+type SortKey = 'name' | 'type' | 'size' | 'date';
+type SortDirection = 'asc' | 'desc';
+
+const sortLabels: Record<SortKey, string> = {
+  name: 'Name',
+  type: 'Type',
+  size: 'Size',
+  date: 'Date',
+};
+
 export default function FileView({
   filesPromise,
   fileViewPage,
@@ -41,16 +52,111 @@ export default function FileView({
   const [keyboardDeleting, setKeyboardDeleting] = useState(false);
   const [emptyTrashOpen, setEmptyTrashOpen] = useState(false);
   const [emptyTrashDeleting, setEmptyTrashDeleting] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTriggeredRef = useRef(false);
   const router = useRouter();
 
   const files = use(filesPromise);
-  const orderedIds = files.map((f) => f.id);
+  const sortedFiles = useMemo(() => {
+    return [...files].sort((a, b) => {
+      const direction = sortDirection === 'asc' ? 1 : -1;
+
+      if (sortKey === 'size') {
+        return (a.size - b.size) * direction;
+      }
+
+      if (sortKey === 'date') {
+        if (fileViewPage === 'trash') {
+          return (
+            (a.original_location ?? '').localeCompare(
+              b.original_location ?? '',
+              undefined,
+              {
+                numeric: true,
+                sensitivity: 'base',
+              },
+            ) * direction
+          );
+        }
+
+        return (
+          (new Date(a.created_at).getTime() -
+            new Date(b.created_at).getTime()) *
+          direction
+        );
+      }
+
+      const aValue =
+        sortKey === 'type' ? (a.file_type ?? 'Folder') : a.name;
+      const bValue =
+        sortKey === 'type' ? (b.file_type ?? 'Folder') : b.name;
+
+      return (
+        aValue.localeCompare(bValue, undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        }) * direction
+      );
+    });
+  }, [fileViewPage, files, sortDirection, sortKey]);
+  const orderedIds = sortedFiles.map((f) => f.id);
   const selectedIds = Array.from(state.selectedIds);
   const selectedFiles = files.filter((file) => state.selectedIds.has(file.id));
   const selectedDownloadsAsArchive =
     selectedFiles.length !== 1 || selectedFiles[0]?.is_dir === true;
 
   const isVisible = state.selectedIds.size > 0;
+  const mobileSelectionMode = state.selectedIds.size > 0;
+
+  function clearLongPressTimer() {
+    if (!longPressTimerRef.current) return;
+
+    clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = null;
+  }
+
+  function handleMobilePointerDown(id: string) {
+    longPressTriggeredRef.current = false;
+    clearLongPressTimer();
+
+    longPressTimerRef.current = setTimeout(() => {
+      longPressTriggeredRef.current = true;
+      select(id, 'ctrl', orderedIds);
+    }, MOBILE_LONG_PRESS_MS);
+  }
+
+  function handleMobilePointerEnd() {
+    clearLongPressTimer();
+  }
+
+  function handleMobileClick(id: string) {
+    if (longPressTriggeredRef.current) {
+      longPressTriggeredRef.current = false;
+      return;
+    }
+
+    if (mobileSelectionMode) {
+      select(id, 'ctrl', orderedIds);
+    }
+  }
+
+  function handleSort(nextSortKey: SortKey) {
+    if (sortKey === nextSortKey) {
+      setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+
+    setSortKey(nextSortKey);
+    setSortDirection('asc');
+  }
+
+  function getSortLabel(key: SortKey) {
+    return sortKey === key
+      ? `${sortLabels[key]} ${sortDirection === 'asc' ? 'Asc' : 'Desc'}`
+      : sortLabels[key];
+  }
 
   useEffect(() => {
     async function handleDeleteKey(e: KeyboardEvent) {
@@ -93,6 +199,10 @@ export default function FileView({
     window.addEventListener('keydown', handleDeleteKey);
     return () => window.removeEventListener('keydown', handleDeleteKey);
   }, [fileViewPage, router, selectedIds]);
+
+  useEffect(() => {
+    return () => clearLongPressTimer();
+  }, []);
 
   async function handleKeyboardDeleteForever() {
     if (!keyboardDeleteIds.length || keyboardDeleting) return;
@@ -164,9 +274,30 @@ export default function FileView({
               onClick={() => select('', 'toggle-all', orderedIds)}
             >
               {state.selectedIds.size === files.length
-                ? 'Cancel selection'
+                ? 'Unselect all'
                 : 'Select all'}
             </Button>
+            <select
+              value={`${sortKey}:${sortDirection}`}
+              onChange={(e) => {
+                const [nextSortKey, nextSortDirection] = e.target.value.split(
+                  ':',
+                ) as [SortKey, SortDirection];
+                setSortKey(nextSortKey);
+                setSortDirection(nextSortDirection);
+              }}
+              aria-label="Sort files"
+              className="h-8 rounded-lg border border-input bg-background px-2 text-sm md:hidden"
+            >
+              <option value="name:asc">Name A-Z</option>
+              <option value="name:desc">Name Z-A</option>
+              <option value="type:asc">Type A-Z</option>
+              <option value="type:desc">Type Z-A</option>
+              <option value="size:asc">Size smallest</option>
+              <option value="size:desc">Size largest</option>
+              <option value="date:asc">Date oldest</option>
+              <option value="date:desc">Date newest</option>
+            </select>
             <div
               className={`transition-all duration-300 ease-out
                 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}
@@ -191,18 +322,55 @@ export default function FileView({
           <div className="hidden overflow-x-auto md:block dark">
             <div
               className="
-                grid min-w-[550px] grid-cols-[minmax(0,1fr)_80px_90px_100px_40px]
+                grid min-w-[590px] grid-cols-[32px_minmax(0,1fr)_80px_90px_100px_40px]
                 gap-4 px-3 py-2 font-medium text-muted-foreground border-b
               "
             >
-              <div>Name</div>
-              <div>Type</div>
-              <div>Size</div>
+              <div></div>
               <div>
-                {fileViewPage === 'files' ? 'Uploaded at' : 'Original location'}
+                <button
+                  type="button"
+                  onClick={() => handleSort('name')}
+                  className="text-left hover:text-foreground"
+                >
+                  {getSortLabel('name')}
+                </button>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => handleSort('type')}
+                  className="text-left hover:text-foreground"
+                >
+                  {getSortLabel('type')}
+                </button>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => handleSort('size')}
+                  className="text-left hover:text-foreground"
+                >
+                  {getSortLabel('size')}
+                </button>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => handleSort('date')}
+                  className="text-left hover:text-foreground"
+                >
+                  {sortKey === 'date'
+                    ? `${fileViewPage === 'files' ? 'Uploaded at' : 'Original location'} ${
+                        sortDirection === 'asc' ? 'Asc' : 'Desc'
+                      }`
+                    : fileViewPage === 'files'
+                      ? 'Uploaded at'
+                      : 'Original location'}
+                </button>
               </div>
             </div>
-            {files.map((file) => (
+            {sortedFiles.map((file) => (
               <div key={file.id}>
                 <FileActionsMenu
                   menuType="context"
@@ -239,12 +407,21 @@ export default function FileView({
                       select(file.id, 'right', orderedIds);
                     }}
                     className={`
-                      grid min-w-[550px] grid-cols-[minmax(0,1fr)_80px_90px_100px_40px]
+                      grid min-w-[590px] grid-cols-[32px_minmax(0,1fr)_80px_90px_100px_40px]
                       gap-4 items-center px-3 py-3 transition
                       border-b border-border hover:bg-card/50
                       ${state.selectedIds.has(file.id) ? 'bg-card' : ''}
                     `}
                   >
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={state.selectedIds.has(file.id)}
+                        onChange={() => select(file.id, 'ctrl', orderedIds)}
+                        aria-label={`Select ${file.name}`}
+                        className="size-4 rounded border-border accent-primary"
+                      />
+                    </div>
                     <div className="flex items-center gap-3 min-w-0">
                       {file.is_dir ? (
                         <Folder className="w-8 h-8 shrink-0 fill-foreground" />
@@ -307,22 +484,36 @@ export default function FileView({
             ))}
           </div>
           <div className="block md:hidden space-y-1">
-            {files.map((file) => {
+            {sortedFiles.map((file) => {
               return (
                 <div
                   key={file.id}
-                  onClick={() => {
-                    select(file.id, 'ctrl', orderedIds);
-                  }}
-                  onContextMenu={() => select(file.id, 'right', orderedIds)}
-                  className={`flex items-center justify-between pl-3 py-3 rounded-md bg-black/30
+                  onPointerDown={() => handleMobilePointerDown(file.id)}
+                  onPointerUp={handleMobilePointerEnd}
+                  onPointerCancel={handleMobilePointerEnd}
+                  onPointerLeave={handleMobilePointerEnd}
+                  onClick={() => handleMobileClick(file.id)}
+                  onContextMenu={(e) => e.preventDefault()}
+                  className={`flex items-center justify-between gap-3 pl-3 py-3 rounded-md bg-black/30
                     ${state.selectedIds.has(file.id) ? 'bg-card ' : ''}`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    {file.is_dir ? (
-                      <Folder className="w-8 h-8 shrink-0 fill-foreground" />
+                    {mobileSelectionMode ? (
+                      <span className="flex size-8 shrink-0 items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={state.selectedIds.has(file.id)}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={() => select(file.id, 'ctrl', orderedIds)}
+                          aria-label={`Select ${file.name}`}
+                          className="size-4 rounded border-border accent-primary"
+                        />
+                      </span>
+                    ) : file.is_dir ? (
+                      <Folder className="size-8 shrink-0 fill-foreground" />
                     ) : (
-                      <File className="w-8 h-8 shrink-0" />
+                      <File className="size-8 shrink-0" />
                     )}
                     <div className="flex flex-col min-w-0">
                       <Link

@@ -555,26 +555,43 @@ export async function trashFiles(ids: string[], ownerId: string) {
 }
 
 export async function restoreFiles(ids: string[], ownerId: string) {
-  const rootFolderId = await getUserRootFolder(ownerId);
-  
   await sql`
+    WITH root_folder AS (
+      SELECT id
+      FROM files
+      WHERE owner_id = ${ownerId}
+        AND parent_id IS NULL
+        AND is_dir = true
+      LIMIT 1
+    ),
+    restore_targets AS (
+      SELECT
+        f.id,
+        CASE
+          WHEN original_parent.id IS NULL
+            OR (
+              original_parent.is_trashed = true
+              AND NOT (original_parent.id = ANY(${ids}))
+            )
+          THEN root_folder.id
+          ELSE f.original_location
+        END AS target_parent_id
+      FROM files AS f
+      CROSS JOIN root_folder
+      LEFT JOIN files AS original_parent
+        ON original_parent.id = f.original_location
+        AND original_parent.owner_id = ${ownerId}
+      WHERE f.owner_id = ${ownerId}
+        AND f.id = ANY(${ids})
+    )
     UPDATE files AS f
     SET
       is_trashed = false,
-      parent_id = f.original_location,
-      original_location = CASE
-        WHEN p.is_trashed = true
-          AND NOT (p.id = ANY(${ids}))
-        THEN ${rootFolderId[0].id}
-        ELSE f.original_location
-      END
-    FROM files AS p
+      parent_id = restore_targets.target_parent_id,
+      original_location = restore_targets.target_parent_id
+    FROM restore_targets
     WHERE f.owner_id = ${ownerId}
-      AND f.id = ANY(${ids})
-      AND (
-        f.parent_id = p.id
-        OR f.parent_id IS NULL
-      );
+      AND f.id = restore_targets.id;
   `;
 }
 
