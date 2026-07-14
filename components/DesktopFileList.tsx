@@ -65,7 +65,7 @@ export default function DesktopFileList({
     <div className="hidden overflow-x-auto md:block dark">
       <div
         className="
-          grid min-w-[590px] grid-cols-[32px_minmax(0,1fr)_80px_90px_200px_40px]
+          grid min-w-[590px] grid-cols-[15px_minmax(0,1fr)_100px_90px_150px_40px]
           gap-4 px-3 py-2 font-medium text-muted-foreground border-b
         "
       >
@@ -136,7 +136,7 @@ export default function DesktopFileList({
                   select(file.id, 'right', orderedIds);
                 }}
                 className={`
-                  grid min-w-[590px] grid-cols-[32px_minmax(0,1fr)_80px_90px_200px_40px]
+                  grid min-w-[590px] grid-cols-[15px_minmax(0,1fr)_100px_90px_150px_40px]
                   gap-4 items-center px-3 py-3 transition
                   border-b border-border hover:bg-card/50
                   ${isSelected ? 'bg-card' : ''}
@@ -153,9 +153,9 @@ export default function DesktopFileList({
                 </div>
                 <div className="flex items-center gap-3 min-w-0">
                   {file.is_dir ? (
-                    <Folder className="w-8 h-8 shrink-0 fill-foreground" />
+                    <Folder className="size-6 shrink-0 fill-foreground" />
                   ) : (
-                    <File className="w-8 h-8 shrink-0" />
+                    <File className="size-6 shrink-0" />
                   )}
                   <Link
                     href={
@@ -176,7 +176,7 @@ export default function DesktopFileList({
                   {file.file_type ? file.file_type : 'Folder'}
                 </div>
                 <div className="text-muted-foreground truncate">
-                  {formatFileSize(file.size, locale)}
+                  {formatFileSize(file.size, locale) === '0 B' ? '—' : formatFileSize(file.size, locale)}
                 </div>
                 <div className="text-muted-foreground truncate">
                   {fileViewPage === 'files'

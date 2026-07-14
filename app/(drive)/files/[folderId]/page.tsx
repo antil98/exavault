@@ -1,7 +1,6 @@
 import FileView from '@/components/FileView';
 import { getFilesByParent, getTotalPages, getUserRootFolder } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import { FolderOpen } from 'lucide-react';
 import { FileSearch } from '@/components/FileSearch';
 import FilePagination from '@/components/FilePagination';
@@ -39,7 +38,6 @@ export default async function Page(props: {
   return (
     <div
       className="w-full min-h-screen">
-      <SidebarTrigger />
       <div className="space-y-6 p-4 md:p-6">
         <div className="space-y-5">
           <div className="flex flex-wrap justify-between gap-3">

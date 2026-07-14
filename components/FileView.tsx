@@ -193,7 +193,7 @@ export default function FileView({
   return (
     <div>
       {fileViewPage === 'trash' ? (
-        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-md">
+        <div className="flex flex-wrap gap-3 text-pretty items-center justify-between p-4 bg-muted/50 rounded-md">
           <div className="flex flex-wrap items-center gap-2 ">
             <Info className="inline-block" />
             <span>Trash is not automatically deleted.</span>

@@ -1,7 +1,6 @@
 import FileView from '@/components/FileView';
 import { getFilesByParent, getTotalPages, getUserRootFolder } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Trash2 } from 'lucide-react';
 import { FileSearch } from '@/components/FileSearch';
 import FilePagination from '@/components/FilePagination';

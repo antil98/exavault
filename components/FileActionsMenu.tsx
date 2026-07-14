@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -157,7 +156,8 @@ export default function FileActionsMenu({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <div
+                <button
+                  type="button"
                   className="rounded-full w-fit p-3 hover:bg-black/50"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -202,7 +202,7 @@ export default function FileActionsMenu({
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleRestore}>
                       <RotateCcw />
-                      Restore file(s)
+                      Restore
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)}>
                       <Trash2 />
@@ -249,7 +249,7 @@ export default function FileActionsMenu({
                 <>
                   <ContextMenuItem onClick={handleRestore}>
                     <RotateCcw />
-                    Restore file(s)
+                    Restore
                   </ContextMenuItem>
                   <ContextMenuItem onClick={() => setDeleteDialogOpen(true)}>
                     <Trash2 />

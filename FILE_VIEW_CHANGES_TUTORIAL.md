@@ -629,3 +629,122 @@ This keeps the app easier to reason about.
 
 When behavior changes, you usually change one shared place instead of hunting through both desktop and mobile layouts.
 
+## 16. Runtime Warning Fixes
+
+Next/React showed two runtime warnings after the breadcrumb and menu changes.
+
+They looked like they came from shadcn components, but the real cause was how the app was using those components.
+
+### Breadcrumb `<li>` Inside `<li>` Error
+
+The error was:
+
+```txt
+In HTML, <li> cannot be a descendant of <li>.
+This will cause a hydration error.
+```
+
+The stack trace pointed at `components/ui/breadcrumb.tsx`, but that file was only rendering what it was asked to render.
+
+The actual problem was in `components/Breadcrumbs.tsx`.
+
+These two components both render `<li>`:
+
+```tsx
+<BreadcrumbItem />
+<BreadcrumbSeparator />
+```
+
+The app had a separator inside a breadcrumb item for the home crumb.
+
+That created invalid HTML like:
+
+```html
+<li>
+  <span>
+    Home
+    <li>/</li>
+  </span>
+</li>
+```
+
+HTML does not allow an `<li>` inside another `<li>`, so React warned that hydration could break.
+
+The fix was:
+
+- Keep `BreadcrumbItem` and `BreadcrumbSeparator` as siblings.
+- Do not put `BreadcrumbSeparator` inside `BreadcrumbItem`.
+- Use a plain `<span>` for the decorative slash inside the home label.
+
+So the inner home slash became:
+
+```tsx
+<span className="text-xl font-semibold" aria-hidden>
+  /
+</span>
+```
+
+And the real breadcrumb separators between crumbs stayed as:
+
+```tsx
+<BreadcrumbSeparator>/</BreadcrumbSeparator>
+```
+
+That keeps the ordered list structure valid.
+
+### Dropdown Trigger Button Warning
+
+The second warning was:
+
+```txt
+Base UI: A component that acts as a button expected a native <button>
+because the nativeButton prop is true.
+```
+
+This came from `FileActionsMenu.tsx`.
+
+The dropdown trigger was rendered as a `<div>`:
+
+```tsx
+<DropdownMenuTrigger
+  render={<div className="..." />}
+>
+```
+
+But Base UI expected the trigger to be a real button because the trigger behaves like a button.
+
+Using a `<div>` removes normal button behavior:
+
+- keyboard accessibility
+- native focus behavior
+- correct semantics for screen readers
+- expected button behavior in forms
+
+The fix was to render a real button:
+
+```tsx
+<DropdownMenuTrigger
+  render={
+    <button
+      type="button"
+      className="rounded-full w-fit p-3 hover:bg-black/50"
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelectItem?.();
+      }}
+    />
+  }
+>
+```
+
+The UI still looks the same, but the HTML is now semantically correct.
+
+### Tiny Cleanup
+
+After changing the trigger to a native button, an old `Button` import in `FileActionsMenu.tsx` was unused, so it was removed.
+
+The important lesson from both warnings:
+
+> When a stack trace points to a UI primitive, first check how your app composed that primitive.
+
+The component library was not broken. The app was accidentally asking it to produce invalid or less-accessible HTML.

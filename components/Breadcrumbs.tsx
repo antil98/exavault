@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -50,16 +51,16 @@ export default async function Breadcrumbs({
             const isLast = index === breadcrumbs.length - 1;
 
             return (
-              <div key={item.id} className="flex items-center gap-2">
+              <Fragment key={item.id}>
                 <BreadcrumbItem>
                   {isLast ? (
                     <BreadcrumbPage>
                       {item.name === 'root' ? (
                         <div className="flex items-center gap-2 text-xl">
-                          <House className="w-5 h-5 text-accent" />{' '}
-                          <BreadcrumbSeparator className="text-xl font-semibold">
+                          <House className="w-5 h-5 text-accent" />
+                          <span className="text-xl font-semibold" aria-hidden>
                             /
-                          </BreadcrumbSeparator>
+                          </span>
                           Home
                         </div>
                       ) : (
@@ -71,9 +72,9 @@ export default async function Breadcrumbs({
                       {item.name === 'root' ? (
                         <div className="flex items-center gap-2 text-xl">
                           <House className="w-5 h-5 text-accent" />
-                          <BreadcrumbSeparator className="text-xl font-semibold">
+                          <span className="text-xl font-semibold" aria-hidden>
                             /
-                          </BreadcrumbSeparator>
+                          </span>
                           Home
                         </div>
                       ) : (
@@ -84,11 +85,13 @@ export default async function Breadcrumbs({
                 </BreadcrumbItem>
 
                 {!isLast && (
-                  <BreadcrumbSeparator className="text-xl font-semibold">
+                  <BreadcrumbSeparator
+                    className="text-xl font-semibold"
+                  >
                     /
                   </BreadcrumbSeparator>
                 )}
-              </div>
+              </Fragment>
             );
           })}
         </BreadcrumbList>

@@ -137,7 +137,7 @@ export default function MobileFileList({
                   {file.name}
                 </Link>
                 <div className="flex flex-col min-w-0 text-muted-foreground mt-1">
-                  <span className=" truncate">
+                  <span className="truncate">
                     {file.file_type ? file.file_type : 'Folder'}
                   </span>
                   <span className="shrink-0">
