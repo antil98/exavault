@@ -12,6 +12,7 @@ export function updateSelection({
   itemsOrdered: string[];
 }) {
   const newSelected = new Set(state.selectedIds);
+  const newShiftSelected = new Set<string>();
 
   if (type === 'toggle-all') {
     if (state.selectedIds.size === itemsOrdered.length) {
@@ -23,6 +24,7 @@ export function updateSelection({
     return {
       selectedIds: newSelected,
       lastSelectedId: null,
+      shiftSelectedIds: newShiftSelected,
     };
   }
 
@@ -35,6 +37,7 @@ export function updateSelection({
     return {
       selectedIds: newSelected,
       lastSelectedId: id,
+      shiftSelectedIds: newShiftSelected,
     };
   }
 
@@ -44,6 +47,7 @@ export function updateSelection({
     return {
       selectedIds: newSelected,
       lastSelectedId: id,
+      shiftSelectedIds: newShiftSelected,
     };
   }
 
@@ -54,22 +58,37 @@ export function updateSelection({
     return {
       selectedIds: newSelected,
       lastSelectedId: id,
+      shiftSelectedIds: newShiftSelected,
     };
   }
 
   if (type === 'shift' && state.lastSelectedId) {
+    state.shiftSelectedIds.forEach((itemId) => newSelected.delete(itemId));
+
     const start = itemsOrdered.indexOf(state.lastSelectedId);
     const end = itemsOrdered.indexOf(id);
+
+    if (start === -1 || end === -1) {
+      return state;
+    }
 
     const [from, to] = start < end ? [start, end] : [end, start];
 
     for (let i = from; i <= to; i++) {
-      newSelected.add(itemsOrdered[i]);
+      const itemId = itemsOrdered[i];
+      const wasSelected = newSelected.has(itemId);
+
+      newSelected.add(itemId);
+
+      if (!wasSelected) {
+        newShiftSelected.add(itemId);
+      }
     }
 
     return {
       selectedIds: newSelected,
-      lastSelectedId: id,
+      lastSelectedId: state.lastSelectedId,
+      shiftSelectedIds: newShiftSelected,
     };
   }
 
@@ -78,6 +97,7 @@ export function updateSelection({
     return {
       selectedIds: newSelected,
       lastSelectedId: null,
+      shiftSelectedIds: newShiftSelected,
     };
   }
 

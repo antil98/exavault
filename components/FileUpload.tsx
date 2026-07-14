@@ -1,11 +1,12 @@
 'use client';
 
-import { type ChangeEvent, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { LoaderCircle, Upload } from 'lucide-react';
 import { SidebarMenuButton } from './ui/sidebar';
+import { useGlobalContext } from '@/app/context/global.context';
 
 export default function FileUpload({
   currentFolderId,
@@ -19,6 +20,7 @@ export default function FileUpload({
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { droppedFiles, setDroppedFiles } = useGlobalContext();
 
   function handleClick() {
     if (uploading) return;
@@ -80,12 +82,21 @@ export default function FileUpload({
         return;
       }
     } finally {
+      setDroppedFiles([]);
+
       setUploading(false);
+
       if (inputRef.current) {
         inputRef.current.value = '';
       }
     }
   }
+
+  useEffect(() => {
+    if (droppedFiles.length === 0 || uploading) return;
+
+    handleUpload(droppedFiles);
+  }, [droppedFiles, uploading]);
 
   return (
     <>

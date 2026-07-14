@@ -9,6 +9,7 @@ import {
 import { FileItem } from '@/types/file-type';
 import { getFileById } from '@/lib/data';
 import { House } from 'lucide-react';
+import BreadcrumbScroller from '@/components/BreadcrumbScroller';
 
 export async function getBreadcrumbs(
   currentId: string,
@@ -39,56 +40,59 @@ export default async function Breadcrumbs({
   fileViewPage: 'files' | 'trash';
 }) {
   const breadcrumbs = await getBreadcrumbs(currentFolderId, userId);
+  const scrollKey = breadcrumbs.map((item) => item.id).join('/');
 
   return (
-    <Breadcrumb className="mx-auto">
-      <BreadcrumbList>
-        {breadcrumbs.map((item, index) => {
-          const isLast = index === breadcrumbs.length - 1;
+    <Breadcrumb className="mx-auto min-w-0 max-w-full">
+      <BreadcrumbScroller scrollKey={scrollKey}>
+        <BreadcrumbList className="w-max flex-nowrap whitespace-nowrap">
+          {breadcrumbs.map((item, index) => {
+            const isLast = index === breadcrumbs.length - 1;
 
-          return (
-            <div key={item.id} className="flex items-center gap-2">
-              <BreadcrumbItem>
-                {isLast ? (
-                  <BreadcrumbPage>
-                    {item.name === 'root' ? (
-                      <div className="flex items-center gap-2 text-xl">
-                        <House className="w-5 h-5 text-accent" />{' '}
-                        <BreadcrumbSeparator className="text-xl font-semibold">
-                          /
-                        </BreadcrumbSeparator>
-                        Home
-                      </div>
-                    ) : (
-                      <span className="text-xl">{item.name}</span>
-                    )}
-                  </BreadcrumbPage>
-                ) : (
-                  <BreadcrumbLink href={`/${fileViewPage}/${item.id}`}>
-                    {item.name === 'root' ? (
-                      <div className="flex items-center gap-2 text-xl">
-                        <House className="w-5 h-5 text-accent" />
-                        <BreadcrumbSeparator className="text-xl font-semibold">
-                          /
-                        </BreadcrumbSeparator>
-                        Home
-                      </div>
-                    ) : (
-                      <span className="text-xl">{item.name}</span>
-                    )}
-                  </BreadcrumbLink>
+            return (
+              <div key={item.id} className="flex items-center gap-2">
+                <BreadcrumbItem>
+                  {isLast ? (
+                    <BreadcrumbPage>
+                      {item.name === 'root' ? (
+                        <div className="flex items-center gap-2 text-xl">
+                          <House className="w-5 h-5 text-accent" />{' '}
+                          <BreadcrumbSeparator className="text-xl font-semibold">
+                            /
+                          </BreadcrumbSeparator>
+                          Home
+                        </div>
+                      ) : (
+                        <span className="text-xl">{item.name}</span>
+                      )}
+                    </BreadcrumbPage>
+                  ) : (
+                    <BreadcrumbLink href={`/${fileViewPage}/${item.id}`}>
+                      {item.name === 'root' ? (
+                        <div className="flex items-center gap-2 text-xl">
+                          <House className="w-5 h-5 text-accent" />
+                          <BreadcrumbSeparator className="text-xl font-semibold">
+                            /
+                          </BreadcrumbSeparator>
+                          Home
+                        </div>
+                      ) : (
+                        <span className="text-xl">{item.name}</span>
+                      )}
+                    </BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+
+                {!isLast && (
+                  <BreadcrumbSeparator className="text-xl font-semibold">
+                    /
+                  </BreadcrumbSeparator>
                 )}
-              </BreadcrumbItem>
-
-              {!isLast && (
-                <BreadcrumbSeparator className="text-xl font-semibold">
-                  /
-                </BreadcrumbSeparator>
-              )}
-            </div>
-          );
-        })}
-      </BreadcrumbList>
+              </div>
+            );
+          })}
+        </BreadcrumbList>
+      </BreadcrumbScroller>
     </Breadcrumb>
   );
 }

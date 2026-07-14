@@ -37,7 +37,9 @@ export default async function Page(props: {
   const userRootFolder = await getUserRootFolder(userId);
 
   return (
-    <div className="w-full min-h-screen">
+    <div
+      className="w-full min-h-screen">
+      <SidebarTrigger />
       <div className="space-y-6 p-4 md:p-6">
         <div className="space-y-5">
           <div className="flex flex-wrap justify-between gap-3">

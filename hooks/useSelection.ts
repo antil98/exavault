@@ -6,6 +6,7 @@ export const useSelection = () => {
   const [state, setState] = useState<SelectionState>({
     selectedIds: new Set(),
     lastSelectedId: null,
+    shiftSelectedIds: new Set(),
   });
 
   function select(

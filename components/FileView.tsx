@@ -1,18 +1,16 @@
 'use client';
 
-import { use, useEffect, useMemo, useRef, useState } from 'react';
+import { use, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Info } from 'lucide-react';
+import { toast } from 'sonner';
 import { useSelection } from '@/hooks/useSelection';
 import { FileItem } from '@/types/file-type';
-import FileActionsMenu from './FileActionsMenu';
-import Link from 'next/link';
-import { Folder, File, Info } from 'lucide-react';
 import {
   deleteForeverAction,
   emptyTrashAction,
   trashFilesAction,
 } from '@/app/actions/files';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,20 +20,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from './ui/alert-dialog';
-import BulkActions from './BulkActions';
-import { Button } from './ui/button';
-
-const MOBILE_LONG_PRESS_MS = 450;
-type SortKey = 'name' | 'type' | 'size' | 'date';
-type SortDirection = 'asc' | 'desc';
-
-const sortLabels: Record<SortKey, string> = {
-  name: 'Name',
-  type: 'Type',
-  size: 'Size',
-  date: 'Date',
-};
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import DesktopFileList from '@/components/DesktopFileList';
+import FileToolbar from '@/components/FileToolbar';
+import MobileFileList from '@/components/MobileFileList';
+import { SortDirection, SortKey } from '@/components/FileViewTypes';
 
 export default function FileView({
   filesPromise,
@@ -54,8 +44,6 @@ export default function FileView({
   const [emptyTrashDeleting, setEmptyTrashDeleting] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressTriggeredRef = useRef(false);
   const router = useRouter();
 
   const files = use(filesPromise);
@@ -101,46 +89,11 @@ export default function FileView({
       );
     });
   }, [fileViewPage, files, sortDirection, sortKey]);
-  const orderedIds = sortedFiles.map((f) => f.id);
+  const orderedIds = sortedFiles.map((file) => file.id);
   const selectedIds = Array.from(state.selectedIds);
   const selectedFiles = files.filter((file) => state.selectedIds.has(file.id));
   const selectedDownloadsAsArchive =
     selectedFiles.length !== 1 || selectedFiles[0]?.is_dir === true;
-
-  const isVisible = state.selectedIds.size > 0;
-  const mobileSelectionMode = state.selectedIds.size > 0;
-
-  function clearLongPressTimer() {
-    if (!longPressTimerRef.current) return;
-
-    clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = null;
-  }
-
-  function handleMobilePointerDown(id: string) {
-    longPressTriggeredRef.current = false;
-    clearLongPressTimer();
-
-    longPressTimerRef.current = setTimeout(() => {
-      longPressTriggeredRef.current = true;
-      select(id, 'ctrl', orderedIds);
-    }, MOBILE_LONG_PRESS_MS);
-  }
-
-  function handleMobilePointerEnd() {
-    clearLongPressTimer();
-  }
-
-  function handleMobileClick(id: string) {
-    if (longPressTriggeredRef.current) {
-      longPressTriggeredRef.current = false;
-      return;
-    }
-
-    if (mobileSelectionMode) {
-      select(id, 'ctrl', orderedIds);
-    }
-  }
 
   function handleSort(nextSortKey: SortKey) {
     if (sortKey === nextSortKey) {
@@ -150,12 +103,6 @@ export default function FileView({
 
     setSortKey(nextSortKey);
     setSortDirection('asc');
-  }
-
-  function getSortLabel(key: SortKey) {
-    return sortKey === key
-      ? `${sortLabels[key]} ${sortDirection === 'asc' ? 'Asc' : 'Desc'}`
-      : sortLabels[key];
   }
 
   useEffect(() => {
@@ -199,10 +146,6 @@ export default function FileView({
     window.addEventListener('keydown', handleDeleteKey);
     return () => window.removeEventListener('keydown', handleDeleteKey);
   }, [fileViewPage, router, selectedIds]);
-
-  useEffect(() => {
-    return () => clearLongPressTimer();
-  }, []);
 
   async function handleKeyboardDeleteForever() {
     if (!keyboardDeleteIds.length || keyboardDeleting) return;
@@ -264,307 +207,53 @@ export default function FileView({
       )}
       {files.length === 0 ? (
         <div className="p-30 text-center">
-          <p className="text-gray-600">The folder is empty</p>
+          <p className="text-gray-600">
+            {fileViewPage === 'files'
+              ? 'Drag and drop files to upload or click the "Upload" button.'
+              : 'Trash is empty.'}
+          </p>
         </div>
       ) : (
         <>
-          <div className="h-10 my-2 flex items-center gap-3 py-2 my-5 sm:gap-3 sm:py-0">
-            <Button
-              variant="secondary"
-              onClick={() => select('', 'toggle-all', orderedIds)}
-            >
-              {state.selectedIds.size === files.length
-                ? 'Unselect all'
-                : 'Select all'}
-            </Button>
-            <select
-              value={`${sortKey}:${sortDirection}`}
-              onChange={(e) => {
-                const [nextSortKey, nextSortDirection] = e.target.value.split(
-                  ':',
-                ) as [SortKey, SortDirection];
-                setSortKey(nextSortKey);
-                setSortDirection(nextSortDirection);
-              }}
-              aria-label="Sort files"
-              className="h-8 rounded-lg border border-input bg-background px-2 text-sm md:hidden"
-            >
-              <option value="name:asc">Name A-Z</option>
-              <option value="name:desc">Name Z-A</option>
-              <option value="type:asc">Type A-Z</option>
-              <option value="type:desc">Type Z-A</option>
-              <option value="size:asc">Size smallest</option>
-              <option value="size:desc">Size largest</option>
-              <option value="date:asc">Date oldest</option>
-              <option value="date:desc">Date newest</option>
-            </select>
-            <div
-              className={`transition-all duration-300 ease-out
-                ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}
-              `}
-            >
-              {isVisible && (
-                <div className="flex flex-wrap items-center justify-end gap-2">
-                  <span className="shrink-0">
-                    {state.selectedIds.size} file(s) selected
-                  </span>
-                  <BulkActions
-                    fileViewPage={fileViewPage}
-                    ids={selectedIds}
-                    downloadsAsArchive={selectedDownloadsAsArchive}
-                    userRootFolder={userRootFolder}
-                    onClearSelection={() => select('', 'clear', orderedIds)}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="hidden overflow-x-auto md:block dark">
-            <div
-              className="
-                grid min-w-[590px] grid-cols-[32px_minmax(0,1fr)_80px_90px_100px_40px]
-                gap-4 px-3 py-2 font-medium text-muted-foreground border-b
-              "
-            >
-              <div></div>
-              <div>
-                <button
-                  type="button"
-                  onClick={() => handleSort('name')}
-                  className="text-left hover:text-foreground"
-                >
-                  {getSortLabel('name')}
-                </button>
-              </div>
-              <div>
-                <button
-                  type="button"
-                  onClick={() => handleSort('type')}
-                  className="text-left hover:text-foreground"
-                >
-                  {getSortLabel('type')}
-                </button>
-              </div>
-              <div>
-                <button
-                  type="button"
-                  onClick={() => handleSort('size')}
-                  className="text-left hover:text-foreground"
-                >
-                  {getSortLabel('size')}
-                </button>
-              </div>
-              <div>
-                <button
-                  type="button"
-                  onClick={() => handleSort('date')}
-                  className="text-left hover:text-foreground"
-                >
-                  {sortKey === 'date'
-                    ? `${fileViewPage === 'files' ? 'Uploaded at' : 'Original location'} ${
-                        sortDirection === 'asc' ? 'Asc' : 'Desc'
-                      }`
-                    : fileViewPage === 'files'
-                      ? 'Uploaded at'
-                      : 'Original location'}
-                </button>
-              </div>
-            </div>
-            {sortedFiles.map((file) => (
-              <div key={file.id}>
-                <FileActionsMenu
-                  menuType="context"
-                  fileViewPage={fileViewPage}
-                  ids={selectedIds}
-                  primaryId={file.id}
-                  primaryName={file.name}
-                  primaryIsDir={file.is_dir}
-                  isPrimarySelected={state.selectedIds.has(file.id)}
-                  downloadsAsArchive={
-                    state.selectedIds.has(file.id)
-                      ? selectedDownloadsAsArchive
-                      : file.is_dir
-                  }
-                  userRootFolder={userRootFolder}
-                  onClearSelection={() => select('', 'clear', orderedIds)}
-                >
-                  <div
-                    title={file.name}
-                    onClick={(e) => {
-                      if (e.shiftKey) {
-                        select(file.id, 'shift', orderedIds);
-                      } else if (e.ctrlKey || e.metaKey) {
-                        select(file.id, 'ctrl', orderedIds);
-                      } else {
-                        select(file.id, 'click', orderedIds);
-                      }
-                    }}
-                    onContextMenu={() => {
-                      if (!state.selectedIds.has(file.id)) {
-                        select(file.id, 'click', orderedIds);
-                      }
-
-                      select(file.id, 'right', orderedIds);
-                    }}
-                    className={`
-                      grid min-w-[590px] grid-cols-[32px_minmax(0,1fr)_80px_90px_100px_40px]
-                      gap-4 items-center px-3 py-3 transition
-                      border-b border-border hover:bg-card/50
-                      ${state.selectedIds.has(file.id) ? 'bg-card' : ''}
-                    `}
-                  >
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={state.selectedIds.has(file.id)}
-                        onChange={() => select(file.id, 'ctrl', orderedIds)}
-                        aria-label={`Select ${file.name}`}
-                        className="size-4 rounded border-border accent-primary"
-                      />
-                    </div>
-                    <div className="flex items-center gap-3 min-w-0">
-                      {file.is_dir ? (
-                        <Folder className="w-8 h-8 shrink-0 fill-foreground" />
-                      ) : (
-                        <File className="w-8 h-8 shrink-0" />
-                      )}
-                      <Link
-                        href={
-                          file.is_dir ? `/${fileViewPage}/${file.id}` : file.url
-                        }
-                        target={file.is_dir ? '_self' : '_blank'}
-                        title={file.name}
-                        onClick={(e) => e.stopPropagation()}
-                        className="
-                          truncate min-w-0 overflow-hidden
-                          font-medium hover:underline
-                        "
-                      >
-                        {file.name}
-                      </Link>
-                    </div>
-                    <div className="text-muted-foreground truncate">
-                      {file.file_type ? file.file_type : 'Folder'}
-                    </div>
-                    <div className="text-muted-foreground truncate">
-                      {(file.size / 1024).toFixed(1)} KB
-                    </div>
-                    <div className="text-muted-foreground truncate">
-                      {fileViewPage === 'files'
-                        ? new Date(file.created_at).toLocaleDateString()
-                        : file.original_location}
-                    </div>
-                    <div
-                      className="flex justify-end"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <FileActionsMenu
-                        menuType="dropdown"
-                        fileViewPage={fileViewPage}
-                        ids={selectedIds}
-                        primaryId={file.id}
-                        primaryName={file.name}
-                        primaryIsDir={file.is_dir}
-                        isPrimarySelected={state.selectedIds.has(file.id)}
-                        downloadsAsArchive={
-                          state.selectedIds.has(file.id)
-                            ? selectedDownloadsAsArchive
-                            : file.is_dir
-                        }
-                        userRootFolder={userRootFolder}
-                        onSelectItem={() =>
-                          select(file.id, 'click', orderedIds)
-                        }
-                        onClearSelection={() => select('', 'clear', orderedIds)}
-                      />
-                    </div>
-                  </div>
-                </FileActionsMenu>
-              </div>
-            ))}
-          </div>
-          <div className="block md:hidden space-y-1">
-            {sortedFiles.map((file) => {
-              return (
-                <div
-                  key={file.id}
-                  onPointerDown={() => handleMobilePointerDown(file.id)}
-                  onPointerUp={handleMobilePointerEnd}
-                  onPointerCancel={handleMobilePointerEnd}
-                  onPointerLeave={handleMobilePointerEnd}
-                  onClick={() => handleMobileClick(file.id)}
-                  onContextMenu={(e) => e.preventDefault()}
-                  className={`flex items-center justify-between gap-3 pl-3 py-3 rounded-md bg-black/30
-                    ${state.selectedIds.has(file.id) ? 'bg-card ' : ''}`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    {mobileSelectionMode ? (
-                      <span className="flex size-8 shrink-0 items-center justify-center">
-                        <input
-                          type="checkbox"
-                          checked={state.selectedIds.has(file.id)}
-                          onPointerDown={(e) => e.stopPropagation()}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={() => select(file.id, 'ctrl', orderedIds)}
-                          aria-label={`Select ${file.name}`}
-                          className="size-4 rounded border-border accent-primary"
-                        />
-                      </span>
-                    ) : file.is_dir ? (
-                      <Folder className="size-8 shrink-0 fill-foreground" />
-                    ) : (
-                      <File className="size-8 shrink-0" />
-                    )}
-                    <div className="flex flex-col min-w-0">
-                      <Link
-                        href={
-                          file.is_dir ? `/${fileViewPage}/${file.id}` : file.url
-                        }
-                        target={file.is_dir ? '_self' : '_blank'}
-                        onClick={(e) => e.stopPropagation()}
-                        className="font-medium truncate max-w-fit"
-                        title={file.name}
-                      >
-                        {file.name}
-                      </Link>
-                      <div className="flex flex-col min-w-0 text-muted-foreground mt-1">
-                        <span className=" truncate">
-                          {file.file_type ? file.file_type : 'Folder'}
-                        </span>
-                        <span className="shrink-0">
-                          {(file.size / 1024).toFixed(1)} KB
-                        </span>
-                        <span>
-                          {fileViewPage === 'files'
-                            ? new Date(file.created_at).toLocaleDateString()
-                            : file.original_location}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <FileActionsMenu
-                      menuType="dropdown"
-                      fileViewPage={fileViewPage}
-                      ids={selectedIds}
-                      primaryId={file.id}
-                      primaryName={file.name}
-                      primaryIsDir={file.is_dir}
-                      isPrimarySelected={state.selectedIds.has(file.id)}
-                      downloadsAsArchive={
-                        state.selectedIds.has(file.id)
-                          ? selectedDownloadsAsArchive
-                          : file.is_dir
-                      }
-                      userRootFolder={userRootFolder}
-                      onSelectItem={() => select(file.id, 'click', orderedIds)}
-                      onClearSelection={() => select('', 'clear', orderedIds)}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <FileToolbar
+            fileViewPage={fileViewPage}
+            selectedCount={state.selectedIds.size}
+            totalCount={files.length}
+            selectedIds={selectedIds}
+            orderedIds={orderedIds}
+            downloadsAsArchive={selectedDownloadsAsArchive}
+            userRootFolder={userRootFolder}
+            sortKey={sortKey}
+            sortDirection={sortDirection}
+            onSortChange={(key, direction) => {
+              setSortKey(key);
+              setSortDirection(direction);
+            }}
+            select={select}
+          />
+          <DesktopFileList
+            files={sortedFiles}
+            fileViewPage={fileViewPage}
+            selectedIds={selectedIds}
+            orderedIds={orderedIds}
+            selectedIdSet={state.selectedIds}
+            downloadsAsArchive={selectedDownloadsAsArchive}
+            userRootFolder={userRootFolder}
+            sortKey={sortKey}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            select={select}
+          />
+          <MobileFileList
+            files={sortedFiles}
+            fileViewPage={fileViewPage}
+            selectedIds={selectedIds}
+            orderedIds={orderedIds}
+            selectedIdSet={state.selectedIds}
+            downloadsAsArchive={selectedDownloadsAsArchive}
+            userRootFolder={userRootFolder}
+            select={select}
+          />
 
           <AlertDialog open={emptyTrashOpen} onOpenChange={setEmptyTrashOpen}>
             <AlertDialogContent>
