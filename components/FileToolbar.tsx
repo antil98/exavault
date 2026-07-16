@@ -2,6 +2,7 @@
 
 import BulkActions from '@/components/BulkActions';
 import { Button } from '@/components/ui/button';
+import { XIcon } from 'lucide-react';
 import {
   FileViewPage,
   SelectFiles,
@@ -12,6 +13,7 @@ import {
 export default function FileToolbar({
   fileViewPage,
   selectedCount,
+  shownCount,
   totalCount,
   selectedIds,
   orderedIds,
@@ -24,6 +26,7 @@ export default function FileToolbar({
 }: {
   fileViewPage: FileViewPage;
   selectedCount: number;
+  shownCount: number;
   totalCount: number;
   selectedIds: string[];
   orderedIds: string[];
@@ -37,20 +40,61 @@ export default function FileToolbar({
   const hasSelection = selectedCount > 0;
 
   return (
-    <div className="h-10 my-2 flex items-center gap-3 py-2 my-5 sm:gap-3 sm:py-0">
-      <Button
-        variant="secondary"
-        onClick={() => select('', 'toggle-all', orderedIds)}
-      >
-        {selectedCount === totalCount ? 'Unselect all' : 'Select all'}
-      </Button>
+    <div
+      data-file-toolbar
+      className="my-2 flex w-full flex-col items-start gap-3 sm:gap-3 sm:py-0"
+    >
+      <div className="min-h-9 w-full min-w-0">
+        {hasSelection ? (
+          <div className="flex w-full min-w-0 items-center gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-1">
+              <span className="min-w-0 truncate">
+                {selectedCount} file(s) selected
+              </span>
+              <Button
+                className="shrink-0"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Clear selection"
+                title="Clear selection"
+                onClick={() => select('', 'clear', orderedIds)}
+              >
+                <XIcon />
+              </Button>
+            </div>
+
+            {selectedCount < totalCount && (
+              <Button
+                className="shrink-0"
+                variant="secondary"
+                onClick={() => select('', 'toggle-all', orderedIds)}
+              >
+                Select all
+              </Button>
+            )}
+
+            <div className="shrink-0">
+              <BulkActions
+                fileViewPage={fileViewPage}
+                ids={selectedIds}
+                downloadsAsArchive={downloadsAsArchive}
+                userRootFolder={userRootFolder}
+                onClearSelection={() => select('', 'clear', orderedIds)}
+              />
+            </div>
+          </div>
+        ) : (
+          <span className="block truncate">
+            Showing {shownCount} of {totalCount} files
+          </span>
+        )}
+      </div>
       <select
         value={`${sortKey}:${sortDirection}`}
         onChange={(e) => {
-          const [nextSortKey, nextSortDirection] = e.target.value.split(':') as [
-            SortKey,
-            SortDirection,
-          ];
+          const [nextSortKey, nextSortDirection] = e.target.value.split(
+            ':',
+          ) as [SortKey, SortDirection];
           onSortChange(nextSortKey, nextSortDirection);
         }}
         aria-label="Sort files"
@@ -65,24 +109,6 @@ export default function FileToolbar({
         <option value="date:asc">Date oldest</option>
         <option value="date:desc">Date newest</option>
       </select>
-      <div
-        className={`transition-all duration-300 ease-out
-          ${hasSelection ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}
-        `}
-      >
-        {hasSelection && (
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <span className="shrink-0">{selectedCount} file(s) selected</span>
-            <BulkActions
-              fileViewPage={fileViewPage}
-              ids={selectedIds}
-              downloadsAsArchive={downloadsAsArchive}
-              userRootFolder={userRootFolder}
-              onClearSelection={() => select('', 'clear', orderedIds)}
-            />
-          </div>
-        )}
-      </div>
     </div>
   );
 }

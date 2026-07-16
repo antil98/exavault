@@ -1,6 +1,12 @@
 'use client';
 
-import { type ChangeEvent, useEffect, useRef, useState } from 'react';
+import {
+  type ChangeEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { upload } from '@vercel/blob/client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -32,7 +38,7 @@ export default function FileUpload({
     await handleUpload(Array.from(e.currentTarget.files || []));
   }
 
-  async function handleUpload(selectedFiles: File[]) {
+  const handleUpload = useCallback(async (selectedFiles: File[]) => {
     if (selectedFiles.length === 0 || uploading) return;
 
     setUploading(true);
@@ -60,12 +66,17 @@ export default function FileUpload({
         id: uploadToast,
       });
 
+      window.dispatchEvent(new Event('exavault:upload-complete'));
       await new Promise((res) => setTimeout(res, 800));
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Upload failed:', err);
 
-      const message = err?.message || '';
+      const message = err instanceof Error ? err.message : '';
+      const status =
+        typeof err === 'object' && err !== null && 'status' in err
+          ? err.status
+          : undefined;
       console.log('Error message:', message);
 
       if (message.includes('Content type mismatch')) {
@@ -75,7 +86,7 @@ export default function FileUpload({
         return;
       }
 
-      if (message.includes('Content Too Large') || err?.status === 413) {
+      if (message.includes('Content Too Large') || status === 413) {
         toast.error('File is too large to upload.', {
           id: uploadToast,
         });
@@ -90,13 +101,13 @@ export default function FileUpload({
         inputRef.current.value = '';
       }
     }
-  }
+  }, [currentFolderId, router, setDroppedFiles, successMessage, uploading]);
 
   useEffect(() => {
     if (droppedFiles.length === 0 || uploading) return;
 
-    handleUpload(droppedFiles);
-  }, [droppedFiles, uploading]);
+    void handleUpload(droppedFiles);
+  }, [droppedFiles, handleUpload, uploading]);
 
   return (
     <>

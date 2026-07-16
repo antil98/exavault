@@ -1,6 +1,6 @@
 const fileSizeUnits = ['byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte'];
 
-export function formatFileSize(sizeInBytes: number, locale: string) {
+export default function formatFileSize(sizeInBytes: number) {
   let value = sizeInBytes;
   let unitIndex = 0;
 
@@ -9,7 +9,7 @@ export function formatFileSize(sizeInBytes: number, locale: string) {
     unitIndex += 1;
   }
 
-  return new Intl.NumberFormat(locale, {
+  return new Intl.NumberFormat(undefined, {
     maximumFractionDigits: value < 10 && unitIndex > 0 ? 1 : 0,
     style: 'unit',
     unit: fileSizeUnits[unitIndex],

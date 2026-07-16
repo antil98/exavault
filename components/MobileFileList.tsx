@@ -6,9 +6,8 @@ import { File, Folder } from 'lucide-react';
 import FileActionsMenu from '@/components/FileActionsMenu';
 import { FileItem } from '@/types/file-type';
 import { FileViewPage, SelectFiles } from '@/components/FileViewTypes';
-import { formatFileDate } from '@/lib/format-file-date';
-import { formatFileSize } from '@/lib/format-file-size';
-import { useBrowserLocale } from '@/hooks/useBrowserLocale';
+import formatFileDate from '@/lib/format-file-date';
+import formatFileSize from '@/lib/format-file-size';
 
 const MOBILE_LONG_PRESS_MS = 450;
 
@@ -35,7 +34,6 @@ export default function MobileFileList({
   const longPressTriggeredRef = useRef(false);
   const lastPointerTypeRef = useRef<string | null>(null);
   const selectionMode = selectedIdSet.size > 0;
-  const locale = useBrowserLocale();
 
   function clearLongPressTimer() {
     if (!longPressTimerRef.current) return;
@@ -92,13 +90,14 @@ export default function MobileFileList({
   }, []);
 
   return (
-    <div className="block md:hidden space-y-1">
+    <div data-file-list className="block md:hidden space-y-1">
       {files.map((file) => {
         const isSelected = selectedIdSet.has(file.id);
 
         return (
           <div
             key={file.id}
+            data-file-id={file.id}
             onPointerDown={(e) => handlePointerDown(e, file.id)}
             onPointerUp={handlePointerEnd}
             onPointerCancel={handlePointerEnd}
@@ -136,17 +135,17 @@ export default function MobileFileList({
                 >
                   {file.name}
                 </Link>
-                <div className="flex flex-col min-w-0 text-muted-foreground mt-1">
+                <div className="flex flex-col sm:flex-row sm:gap-3 min-w-0 text-muted-foreground mt-1">
                   <span className="truncate">
                     {file.file_type ? file.file_type : 'Folder'}
                   </span>
-                  <span className="shrink-0">
-                    {formatFileSize(file.size, locale)}
+                  <span className="shrink-0 truncate">
+                    {formatFileSize(file.size) === '0 B' ? '—' : formatFileSize(file.size)}
                   </span>
-                  <span>
+                  <span className="truncate">
                     {fileViewPage === 'files'
-                      ? formatFileDate(file.created_at, locale)
-                      : file.original_location}
+                    ? formatFileDate(file.created_at)
+                    : formatFileDate(file.deleted_at)}
                   </span>
                 </div>
               </div>

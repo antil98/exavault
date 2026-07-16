@@ -10,4 +10,5 @@ export type FileItem = {
   is_dir: boolean;
   is_trashed: boolean;
   original_location: string;
+  deleted_at: string;
 };

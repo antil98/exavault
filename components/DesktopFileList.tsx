@@ -12,9 +12,8 @@ import {
   SortKey,
   sortLabels,
 } from '@/components/FileViewTypes';
-import { formatFileDate } from '@/lib/format-file-date';
-import { formatFileSize } from '@/lib/format-file-size';
-import { useBrowserLocale } from '@/hooks/useBrowserLocale';
+import formatFileDate from '@/lib/format-file-date';
+import formatFileSize from '@/lib/format-file-size';
 
 export default function DesktopFileList({
   files,
@@ -41,8 +40,6 @@ export default function DesktopFileList({
   onSort: (key: SortKey) => void;
   select: SelectFiles;
 }) {
-  const locale = useBrowserLocale();
-
   function getSortLabel(key: SortKey) {
     return sortKey === key ? (
       <span className="inline-flex items-center gap-1">
@@ -59,10 +56,10 @@ export default function DesktopFileList({
   }
 
   const dateColumnLabel =
-    fileViewPage === 'files' ? 'Uploaded at' : 'Original location';
+    fileViewPage === 'files' ? 'Uploaded at' : 'Date deleted';
 
   return (
-    <div className="hidden overflow-x-auto md:block dark">
+    <div data-file-list className="hidden overflow-x-auto md:block dark">
       <div
         className="
           grid min-w-[590px] grid-cols-[15px_minmax(0,1fr)_100px_90px_150px_40px]
@@ -118,6 +115,7 @@ export default function DesktopFileList({
               onClearSelection={() => select('', 'clear', orderedIds)}
             >
               <div
+                data-file-id={file.id}
                 title={file.name}
                 onClick={(e) => {
                   if (e.shiftKey) {
@@ -172,16 +170,31 @@ export default function DesktopFileList({
                     {file.name}
                   </Link>
                 </div>
-                <div className="text-muted-foreground truncate">
+                <div
+                  className="text-muted-foreground truncate"
+                  title={file.file_type ? file.file_type : 'Folder'}
+                >
                   {file.file_type ? file.file_type : 'Folder'}
                 </div>
-                <div className="text-muted-foreground truncate">
-                  {formatFileSize(file.size, locale) === '0 B' ? '—' : formatFileSize(file.size, locale)}
+                <div
+                  className="text-muted-foreground truncate"
+                  title={
+                    formatFileSize(file.size) === '0 B'
+                      ? '—'
+                      : formatFileSize(file.size)
+                  }
+                >
+                  {formatFileSize(file.size) === '0 B'
+                    ? '—'
+                    : formatFileSize(file.size)}
                 </div>
-                <div className="text-muted-foreground truncate">
+                <div
+                  className="text-muted-foreground truncate"
+                  title={file.created_at}
+                >
                   {fileViewPage === 'files'
-                    ? formatFileDate(file.created_at, locale)
-                    : file.original_location}
+                    ? formatFileDate(file.created_at)
+                    : formatFileDate(file.deleted_at)}
                 </div>
                 <div
                   className="flex justify-end"
@@ -220,11 +233,11 @@ function SortableHeader({
   onClick: () => void;
 }) {
   return (
-    <div>
+    <div className="-my-2 flex min-w-0">
       <button
         type="button"
         onClick={onClick}
-        className="text-left hover:text-foreground"
+        className="w-full min-w-0 py-2 text-left hover:text-foreground"
       >
         {label}
       </button>

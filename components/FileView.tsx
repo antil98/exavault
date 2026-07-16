@@ -26,6 +26,7 @@ import DesktopFileList from '@/components/DesktopFileList';
 import FileToolbar from '@/components/FileToolbar';
 import MobileFileList from '@/components/MobileFileList';
 import { SortDirection, SortKey } from '@/components/FileViewTypes';
+import { useGlobalContext } from '@/app/context/global.context';
 
 export default function FileView({
   filesPromise,
@@ -45,6 +46,7 @@ export default function FileView({
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const router = useRouter();
+  const { renamedFile, setRenamedFile } = useGlobalContext();
 
   const files = use(filesPromise);
   const sortedFiles = useMemo(() => {
@@ -104,6 +106,74 @@ export default function FileView({
     setSortKey(nextSortKey);
     setSortDirection('asc');
   }
+
+  useEffect(() => {
+    if (!selectedIds.length) return;
+
+    function handleOutsidePointerDown(event: PointerEvent) {
+      const target = event.target;
+
+      if (!(target instanceof Element)) return;
+
+      const isInsideFileInteraction = target.closest(
+        [
+          '[data-file-list]',
+          '[data-file-toolbar]',
+          '[data-slot$="-content"]',
+        ].join(', '),
+      );
+
+      if (isInsideFileInteraction) return;
+
+      select('', 'clear', orderedIds);
+    }
+
+    document.addEventListener('pointerdown', handleOutsidePointerDown);
+    return () =>
+      document.removeEventListener('pointerdown', handleOutsidePointerDown);
+  }, [orderedIds, select, selectedIds.length]);
+
+  useEffect(() => {
+    if (!renamedFile) return;
+
+    const refreshedFile = sortedFiles.find((file) => file.id === renamedFile.id);
+
+    if (!refreshedFile || refreshedFile.name !== renamedFile.name) return;
+
+    const frameId = requestAnimationFrame(() => {
+      const fileElements = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-file-id]'),
+      ).filter((element) => element.dataset.fileId === renamedFile.id);
+      const visibleElement =
+        fileElements.find((element) => element.offsetParent !== null) ??
+        fileElements[0];
+
+      visibleElement?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+
+      setRenamedFile(null);
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [renamedFile, setRenamedFile, sortedFiles]);
+
+  useEffect(() => {
+    function handleUploadComplete() {
+      if (fileViewPage !== 'files') return;
+
+      setSortKey('date');
+      setSortDirection('desc');
+    }
+
+    window.addEventListener('exavault:upload-complete', handleUploadComplete);
+    return () =>
+      window.removeEventListener(
+        'exavault:upload-complete',
+        handleUploadComplete,
+      );
+  }, [fileViewPage]);
 
   useEffect(() => {
     async function handleDeleteKey(e: KeyboardEvent) {
@@ -193,7 +263,7 @@ export default function FileView({
   return (
     <div>
       {fileViewPage === 'trash' ? (
-        <div className="flex flex-wrap gap-3 text-pretty items-center justify-between p-4 bg-muted/50 rounded-md">
+        <div className="flex flex-wrap gap-3 text-pretty items-center justify-between p-4 my-5 bg-muted/50 rounded-md">
           <div className="flex flex-wrap items-center gap-2 ">
             <Info className="inline-block" />
             <span>Trash is not automatically deleted.</span>
@@ -218,6 +288,7 @@ export default function FileView({
           <FileToolbar
             fileViewPage={fileViewPage}
             selectedCount={state.selectedIds.size}
+            shownCount={sortedFiles.length}
             totalCount={files.length}
             selectedIds={selectedIds}
             orderedIds={orderedIds}

@@ -538,6 +538,7 @@ export async function trashFiles(ids: string[], ownerId: string) {
     SET
       is_trashed = true,
       original_location = f.parent_id,
+      deleted_at = NOW(),
       parent_id = CASE
         WHEN p.is_trashed = false
           AND NOT (p.id = ANY(${ids}))
