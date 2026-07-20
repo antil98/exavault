@@ -21,6 +21,8 @@ import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import CreateFolder from './CreateFolder';
 import FileUpload from './FileUpload';
+import ThemeToggle from './ThemeToggle';
+import { useRef } from 'react';
 
 export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
   const { isMobile, setOpenMobile } = useSidebar();
@@ -40,6 +42,13 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
   };
 
   const { user } = useUser();
+
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  function handleClick() {
+    const button = wrapperRef.current?.querySelector('button');
+    button?.click();
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -129,14 +138,21 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <Show when="signed-in">
-          <div className="flex items-center gap-3">
-            <UserButton />
-            <span className="group-data-[collapsible=icon]:hidden">
-              {user?.firstName}
-            </span>
-          </div>
-        </Show>
+        <div className="flex flex-row items-center justify-between gap-2 pr-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:px-2">
+          <Show when="signed-in">
+            <div
+              className="w-full flex p-3 rounded-lg items-center gap-2 cursor-pointer hover:bg-black/5 hover:dark:bg-white/10"
+              ref={wrapperRef}
+              onClick={handleClick}
+            >
+              <UserButton />
+              <span className="group-data-[collapsible=icon]:hidden">
+                {user?.firstName}
+              </span>
+            </div>
+          </Show>
+          <ThemeToggle />
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

@@ -59,7 +59,7 @@ export default function DesktopFileList({
     fileViewPage === 'files' ? 'Uploaded at' : 'Date deleted';
 
   return (
-    <div data-file-list className="hidden overflow-x-auto md:block dark">
+    <div data-file-list className="hidden overflow-x-auto md:block">
       <div
         className="
           grid min-w-[590px] grid-cols-[15px_minmax(0,1fr)_100px_90px_150px_40px]
@@ -136,8 +136,8 @@ export default function DesktopFileList({
                 className={`
                   grid min-w-[590px] grid-cols-[15px_minmax(0,1fr)_100px_90px_150px_40px]
                   gap-4 items-center px-3 py-3 transition
-                  border-b border-border hover:bg-card/50
-                  ${isSelected ? 'bg-card' : ''}
+                  border-b border-border hover:bg-black/5 hover:dark:bg-white/10
+                  ${isSelected ? 'bg-black/15 dark:bg-white/15' : ''}
                 `}
               >
                 <div onClick={(e) => e.stopPropagation()}>

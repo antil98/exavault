@@ -5,6 +5,8 @@ import { Trash2 } from 'lucide-react';
 import { FileSearch } from '@/components/FileSearch';
 import FilePagination from '@/components/FilePagination';
 import requireAuth from '@/lib/auth';
+import { Suspense } from 'react';
+import FileViewSkeleton from '@/components/FileViewSkeleton';
 
 export default async function Page(props: {
   params: { folderId: string };
@@ -42,7 +44,7 @@ export default async function Page(props: {
         <div className="space-y-5">
           <div className="flex flex-wrap justify-between gap-3">
             <div className="flex gap-2 items-center mx-auto lg:mx-0">
-              <Trash2 className="w-8 h-8"/>
+              <Trash2 className="w-8 h-8" />
               <h2 className="text-3xl font-semibold">Recycle bin</h2>
             </div>
             <FileSearch />
@@ -53,12 +55,14 @@ export default async function Page(props: {
           userId={userId}
           fileViewPage="trash"
         />
-        <FileView
-          filesPromise={trashedFiles}
-          fileViewPage="trash"
-          userRootFolder={userRootFolder[0].id}
-        />
-        <FilePagination currentPage={page} totalPages={totalPages} />
+        <Suspense fallback={<FileViewSkeleton />}>
+          <FileView
+            filesPromise={trashedFiles}
+            fileViewPage="trash"
+            userRootFolder={userRootFolder[0].id}
+          />
+          <FilePagination currentPage={page} totalPages={totalPages} />
+        </Suspense>
       </div>
     </div>
   );

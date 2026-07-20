@@ -75,6 +75,8 @@ export async function getFilesByParent(
   page: number = 1,
   pageSize: number = 20,
 ): Promise<FileItem[]> {
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+
   const result = parentId
     ? await sql`
         SELECT * FROM files

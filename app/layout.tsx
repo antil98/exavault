@@ -5,6 +5,7 @@ import { Poppins, Lora, Fira_Code } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from 'sonner';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 const fontSans = Poppins({
   subsets: ['latin'],
@@ -40,13 +41,21 @@ export default function RootLayout({
         fontSans.variable,
         fontSerif.variable,
         fontMono.variable,
-        'font-sans'
+        'font-sans',
       )}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col select-none dark">
+      <body className="min-h-full flex flex-col select-none">
         <ClerkProvider appearance={{ theme: shadcn }}>
-          <main className="flex-1">{children}</main>
-          <Toaster theme="dark" richColors position="bottom-right" />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <main className="flex-1">{children}</main>
+            <Toaster  richColors position="bottom-right" />
+          </ThemeProvider>
         </ClerkProvider>
       </body>
     </html>

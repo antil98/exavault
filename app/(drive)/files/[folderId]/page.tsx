@@ -5,6 +5,9 @@ import { FolderOpen } from 'lucide-react';
 import { FileSearch } from '@/components/FileSearch';
 import FilePagination from '@/components/FilePagination';
 import requireAuth from '@/lib/auth';
+import { Suspense } from 'react';
+import DesktopFileListSkeleton from '@/components/DesktopFIleListSkeleton';
+import FileViewSkeleton from '@/components/FileViewSkeleton';
 
 export default async function Page(props: {
   params: { folderId: string };
@@ -26,6 +29,7 @@ export default async function Page(props: {
     searchQuery,
     page,
   );
+
   const totalPages = await getTotalPages(
     currentFolderId,
     userId,
@@ -36,8 +40,7 @@ export default async function Page(props: {
   const userRootFolder = await getUserRootFolder(userId);
 
   return (
-    <div
-      className="w-full min-h-screen">
+    <div className="w-full min-h-screen">
       <div className="space-y-6 p-4 md:p-6">
         <div className="space-y-5">
           <div className="flex flex-wrap justify-between gap-3">
@@ -53,12 +56,14 @@ export default async function Page(props: {
           userId={userId}
           fileViewPage="files"
         />
-        <FileView
-          filesPromise={storedFiles}
-          fileViewPage="files"
-          userRootFolder={userRootFolder[0].id}
-        />
-        <FilePagination currentPage={page} totalPages={totalPages} />
+        <Suspense fallback={<FileViewSkeleton />}>
+          <FileView
+            filesPromise={storedFiles}
+            fileViewPage="files"
+            userRootFolder={userRootFolder[0].id}
+          />
+          <FilePagination currentPage={page} totalPages={totalPages} />
+        </Suspense>
       </div>
     </div>
   );

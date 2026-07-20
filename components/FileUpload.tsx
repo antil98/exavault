@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { LoaderCircle, Upload } from 'lucide-react';
 import { SidebarMenuButton } from './ui/sidebar';
-import { useGlobalContext } from '@/app/context/global.context';
+import { useGlobalContext } from '@/context/global.context';
 
 export default function FileUpload({
   currentFolderId,
@@ -38,70 +38,73 @@ export default function FileUpload({
     await handleUpload(Array.from(e.currentTarget.files || []));
   }
 
-  const handleUpload = useCallback(async (selectedFiles: File[]) => {
-    if (selectedFiles.length === 0 || uploading) return;
+  const handleUpload = useCallback(
+    async (selectedFiles: File[]) => {
+      if (selectedFiles.length === 0 || uploading) return;
 
-    setUploading(true);
+      setUploading(true);
 
-    const uploadToast = toast.loading('Uploading files...');
+      const uploadToast = toast.loading('Uploading files...');
 
-    try {
-      await Promise.all(
-        selectedFiles.map((file) => {
-          const pathname = `${currentFolderId}/${file.name}`;
-          return upload(pathname, file, {
-            access: 'public',
-            handleUploadUrl: '/api/upload',
-            clientPayload: JSON.stringify({
-              parentId: currentFolderId,
-              size: file.size,
-              originalName: file.name,
-              fileType: file.type,
-            }),
+      try {
+        await Promise.all(
+          selectedFiles.map((file) => {
+            const pathname = `${currentFolderId}/${file.name}`;
+            return upload(pathname, file, {
+              access: 'public',
+              handleUploadUrl: '/api/upload',
+              clientPayload: JSON.stringify({
+                parentId: currentFolderId,
+                size: file.size,
+                originalName: file.name,
+                fileType: file.type,
+              }),
+            });
+          }),
+        );
+
+        toast.success(successMessage, {
+          id: uploadToast,
+        });
+
+        window.dispatchEvent(new Event('exavault:upload-complete'));
+        await new Promise((res) => setTimeout(res, 800));
+        router.refresh();
+      } catch (err: unknown) {
+        console.error('Upload failed:', err);
+
+        const message = err instanceof Error ? err.message : '';
+        const status =
+          typeof err === 'object' && err !== null && 'status' in err
+            ? err.status
+            : undefined;
+        console.log('Error message:', message);
+
+        if (message.includes('Content type mismatch')) {
+          toast.error("File type isn't allowed.", {
+            id: uploadToast,
           });
-        }),
-      );
+          return;
+        }
 
-      toast.success(successMessage, {
-        id: uploadToast,
-      });
+        if (message.includes('Content Too Large') || status === 413) {
+          toast.error('File is too large to upload.', {
+            id: uploadToast,
+          });
+          return;
+        }
+      } finally {
+        setDroppedFiles([]);
 
-      window.dispatchEvent(new Event('exavault:upload-complete'));
-      await new Promise((res) => setTimeout(res, 800));
-      router.refresh();
-    } catch (err: unknown) {
-      console.error('Upload failed:', err);
+        setUploading(false);
 
-      const message = err instanceof Error ? err.message : '';
-      const status =
-        typeof err === 'object' && err !== null && 'status' in err
-          ? err.status
-          : undefined;
-      console.log('Error message:', message);
-
-      if (message.includes('Content type mismatch')) {
-        toast.error("File type isn't allowed.", {
-          id: uploadToast,
-        });
-        return;
+        if (inputRef.current) {
+          inputRef.current.value = '';
+        }
       }
-
-      if (message.includes('Content Too Large') || status === 413) {
-        toast.error('File is too large to upload.', {
-          id: uploadToast,
-        });
-        return;
-      }
-    } finally {
-      setDroppedFiles([]);
-
-      setUploading(false);
-
-      if (inputRef.current) {
-        inputRef.current.value = '';
-      }
-    }
-  }, [currentFolderId, router, setDroppedFiles, successMessage, uploading]);
+    },
+    [currentFolderId, router, setDroppedFiles, successMessage, uploading],
+  );
 
   useEffect(() => {
     if (droppedFiles.length === 0 || uploading) return;

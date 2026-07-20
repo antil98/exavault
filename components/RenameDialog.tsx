@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { renameFileAction } from '@/app/actions/files';
 import { LoaderCircle } from 'lucide-react';
-import { useGlobalContext } from '@/app/context/global.context';
+import { useGlobalContext } from '@/context/global.context';
 
 export default function RenameDialog({
   open,

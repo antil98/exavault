@@ -26,7 +26,7 @@ import DesktopFileList from '@/components/DesktopFileList';
 import FileToolbar from '@/components/FileToolbar';
 import MobileFileList from '@/components/MobileFileList';
 import { SortDirection, SortKey } from '@/components/FileViewTypes';
-import { useGlobalContext } from '@/app/context/global.context';
+import { useGlobalContext } from '@/context/global.context';
 
 export default function FileView({
   filesPromise,
@@ -78,10 +78,8 @@ export default function FileView({
         );
       }
 
-      const aValue =
-        sortKey === 'type' ? (a.file_type ?? 'Folder') : a.name;
-      const bValue =
-        sortKey === 'type' ? (b.file_type ?? 'Folder') : b.name;
+      const aValue = sortKey === 'type' ? (a.file_type ?? 'Folder') : a.name;
+      const bValue = sortKey === 'type' ? (b.file_type ?? 'Folder') : b.name;
 
       return (
         aValue.localeCompare(bValue, undefined, {
@@ -136,7 +134,9 @@ export default function FileView({
   useEffect(() => {
     if (!renamedFile) return;
 
-    const refreshedFile = sortedFiles.find((file) => file.id === renamedFile.id);
+    const refreshedFile = sortedFiles.find(
+      (file) => file.id === renamedFile.id,
+    );
 
     if (!refreshedFile || refreshedFile.name !== renamedFile.name) return;
 

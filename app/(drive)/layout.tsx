@@ -4,7 +4,8 @@ import { AppSidebar } from '@/components/AppSidebar';
 import requireAuth from '@/lib/auth';
 import Link from 'next/link';
 import FileDropProvider from '@/components/FileDropProvider';
-import { GlobalProvider } from '../context/global.context';
+import { GlobalProvider } from '../../context/global.context';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default async function AppLayout({
   children,
@@ -29,6 +30,7 @@ export default async function AppLayout({
                 <img src="/icon.png" alt="Exavault logo" width="30" />
                 Exavault
               </Link>
+              <ThemeToggle />
             </div>
             <main className="flex-1 min-w-0">{children}</main>
           </div>

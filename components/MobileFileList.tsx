@@ -104,8 +104,8 @@ export default function MobileFileList({
             onPointerLeave={handlePointerEnd}
             onClick={(e) => handleClick(e, file.id)}
             onContextMenu={(e) => e.preventDefault()}
-            className={`flex items-center justify-between gap-3 pl-3 py-3 rounded-md bg-black/30
-              ${isSelected ? 'bg-card ' : ''}`}
+            className={`flex items-center justify-between gap-3 pl-3 py-3 rounded-md bg-black/5 dark:bg-black/30
+              ${isSelected ? 'bg-black/15 dark:bg-white/15' : ''}`}
           >
             <div className="flex items-center gap-3 min-w-0">
               {selectionMode ? (

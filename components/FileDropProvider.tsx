@@ -1,6 +1,6 @@
 'use client';
 
-import { useGlobalContext } from '@/app/context/global.context';
+import { useGlobalContext } from '@/context/global.context';
 import { useRef, useState } from 'react';
 
 export default function FileDropProvider({
@@ -42,8 +42,8 @@ export default function FileDropProvider({
       onDrop={handleDrop}
     >
       {dragging && (
-        <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center">
-          <div className="w-full h-full border-4 border-dashed border-accent bg-black/50 flex items-center justify-center text-2xl font-semibold">
+        <div className="pointer-events-none absolute inset-0 z-50 flex justify-center">
+          <div className="w-full h-full pt-[50%] md:pt-[10%] border-4 border-dashed border-accent bg-black/30 flex justify-center text-2xl font-semibold">
             Drop files to upload
           </div>
         </div>
