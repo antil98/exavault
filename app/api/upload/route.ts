@@ -1,3 +1,6 @@
+// Storage provider integration point.
+// This route implements the upload flow for Vercel Blob.
+// Replace `handleUpload` and its callbacks if migrating to another storage provider.
 import { handleUpload } from '@vercel/blob/client';
 import { uploadFile } from '../../../lib/data';
 import requireAuth from '@/lib/auth';
@@ -39,6 +42,8 @@ export async function POST(req: Request) {
         return {
           allowedContentTypes,
           addRandomSuffix: true,
+          // Vercel Blob must call back to a publicly reachable endpoint after the upload
+          // completes. This URL should point to your deployed application.
           callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/upload`,
           tokenPayload: JSON.stringify({
             ...parsedPayload,
@@ -46,6 +51,8 @@ export async function POST(req: Request) {
           }),
         };
       },
+      // Vercel Blob requires metadata persistence to happen in this callback after
+      // the upload completes. Other storage providers may not require this flow.
       onUploadCompleted: async ({ blob, tokenPayload }) => {
         try {
           const parsed = JSON.parse(tokenPayload ?? '{}');

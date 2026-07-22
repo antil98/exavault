@@ -1,12 +1,10 @@
 import FileView from '@/components/FileView';
 import { getFilesByParent, getTotalPages, getUserRootFolder } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import { FolderOpen } from 'lucide-react';
 import { FileSearch } from '@/components/FileSearch';
 import FilePagination from '@/components/FilePagination';
 import requireAuth from '@/lib/auth';
 import { Suspense } from 'react';
-import DesktopFileListSkeleton from '@/components/DesktopFIleListSkeleton';
 import FileViewSkeleton from '@/components/FileViewSkeleton';
 
 export default async function Page(props: {

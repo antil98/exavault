@@ -8,7 +8,7 @@ import {
   SelectFiles,
   SortDirection,
   SortKey,
-} from '@/components/FileViewTypes';
+} from '@/types/file-view-types';
 
 export default function FileToolbar({
   fileViewPage,

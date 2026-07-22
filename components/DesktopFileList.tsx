@@ -11,7 +11,7 @@ import {
   SortDirection,
   SortKey,
   sortLabels,
-} from '@/components/FileViewTypes';
+} from '@/types/file-view-types';
 import formatFileDate from '@/lib/format-file-date';
 import formatFileSize from '@/lib/format-file-size';
 

@@ -4,7 +4,6 @@ import type { Metadata } from 'next';
 import { Poppins, Lora, Fira_Code } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
-import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import SonnerProvider from '@/components/SonnerProvider';
 

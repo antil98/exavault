@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { File, Folder } from 'lucide-react';
 import FileActionsMenu from '@/components/FileActionsMenu';
 import { FileItem } from '@/types/file-type';
-import { FileViewPage, SelectFiles } from '@/components/FileViewTypes';
+import { FileViewPage, SelectFiles } from '@/types/file-view-types';
 import formatFileDate from '@/lib/format-file-date';
 import formatFileSize from '@/lib/format-file-size';
 
@@ -140,12 +140,14 @@ export default function MobileFileList({
                     {file.file_type ? file.file_type : 'Folder'}
                   </span>
                   <span className="shrink-0 truncate">
-                    {formatFileSize(file.size) === '0 B' ? '—' : formatFileSize(file.size)}
+                    {formatFileSize(file.size) === '0 B'
+                      ? '—'
+                      : formatFileSize(file.size)}
                   </span>
                   <span className="truncate">
                     {fileViewPage === 'files'
-                    ? formatFileDate(file.created_at)
-                    : formatFileDate(file.deleted_at)}
+                      ? formatFileDate(file.created_at)
+                      : formatFileDate(file.deleted_at)}
                   </span>
                 </div>
               </div>
@@ -159,7 +161,9 @@ export default function MobileFileList({
                 primaryName={file.name}
                 primaryIsDir={file.is_dir}
                 isPrimarySelected={isSelected}
-                downloadsAsArchive={isSelected ? downloadsAsArchive : file.is_dir}
+                downloadsAsArchive={
+                  isSelected ? downloadsAsArchive : file.is_dir
+                }
                 userRootFolder={userRootFolder}
                 onSelectItem={() => select(file.id, 'click', orderedIds)}
                 onClearSelection={() => select('', 'clear', orderedIds)}

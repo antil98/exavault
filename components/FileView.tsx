@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import DesktopFileList from '@/components/DesktopFileList';
 import FileToolbar from '@/components/FileToolbar';
 import MobileFileList from '@/components/MobileFileList';
-import { SortDirection, SortKey } from '@/components/FileViewTypes';
+import { SortDirection, SortKey } from '@/types/file-view-types';
 import { useGlobalContext } from '@/context/global.context';
 
 export default function FileView({

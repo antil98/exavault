@@ -64,6 +64,7 @@ export async function POST(req: Request) {
         items.map((item) => {
           if (item.is_dir || !item.url) return Promise.resolve();
 
+          // Swap this deletion step for the equivalent delete operation in another provider.
           return del(item.url);
         }),
       );

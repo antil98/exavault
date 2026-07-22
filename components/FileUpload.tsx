@@ -50,6 +50,7 @@ export default function FileUpload({
         await Promise.all(
           selectedFiles.map((file) => {
             const pathname = `${currentFolderId}/${file.name}`;
+            // Replace this upload invocation with the equivalent API for your provider.
             return upload(pathname, file, {
               access: 'public',
               handleUploadUrl: '/api/upload',
@@ -123,7 +124,11 @@ export default function FileUpload({
           hover:bg-background hover:text-foreground hover:shadow-sm 
         "
       >
-        {uploading ? <LoaderCircle className="animate-spin" /> : <Upload className="size-5" />}
+        {uploading ? (
+          <LoaderCircle className="animate-spin" />
+        ) : (
+          <Upload className="size-5" />
+        )}
         <span className="group-data-[collapsible=icon]:hidden">
           {uploading ? 'Uploading...' : buttonLabel}
         </span>

@@ -34,16 +34,11 @@ function SkeletonCard({ index }: { index: number }) {
       "
     >
       <div className="flex min-w-0 items-center gap-3">
-        {/* icon */}
         <Skeleton className="size-8 shrink-0 rounded-md" />
-
         <div className="flex min-w-0 flex-col">
-          {/* filename */}
           <Skeleton
             className={`h-5 ${widths[index % widths.length]}`}
           />
-
-          {/* metadata */}
           <div className="mt-1 flex min-w-0 flex-col sm:flex-row sm:gap-3">
             <Skeleton className="h-4 w-16" />
             <Skeleton className="mt-1 h-4 w-10 sm:mt-0" />
@@ -51,8 +46,6 @@ function SkeletonCard({ index }: { index: number }) {
           </div>
         </div>
       </div>
-
-      {/* actions */}
       <Skeleton className="size-12 rounded-full shrink-0" />
     </div>
   );

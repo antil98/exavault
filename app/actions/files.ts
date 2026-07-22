@@ -4,9 +4,7 @@ import { del } from '@vercel/blob';
 import {
   createFolder as createFolderInDb,
   deleteForever as deleteForeverInDb,
-  getFileById,
   getFileLink,
-  getFilesByParent,
   getFileTree,
   getTrashedFiles,
   moveFiles as moveFilesInDb,
@@ -87,7 +85,7 @@ export async function moveFilesAction(ids: string[], targetFolderId: string) {
 
 export async function trashFilesAction(ids: string[]) {
   const userId = await requireAuth();
-  
+
   if (!Array.isArray(ids) || !ids.length) {
     return {
       ok: false as const,
@@ -137,6 +135,7 @@ export async function deleteForeverAction(ids: string[]) {
   await Promise.all(
     items.map((item) => {
       if (!item.url) return Promise.resolve();
+      // Swap this deletion step for the equivalent delete operation in another provider.
       return del(item.url);
     }),
   );
@@ -148,7 +147,7 @@ export async function deleteForeverAction(ids: string[]) {
 
 export async function emptyTrashAction() {
   const userId = await requireAuth();
-  
+
   const items = await getTrashedFiles(userId);
   const ids = items.map((item) => item.id);
 
@@ -159,6 +158,7 @@ export async function emptyTrashAction() {
   await Promise.all(
     items.map((item) => {
       if (item.is_dir || !item.url) return Promise.resolve();
+      // Swap this deletion step for the equivalent delete operation in another provider.
       return del(item.url);
     }),
   );
@@ -177,9 +177,7 @@ export async function shareFilesAction(ids: string[]) {
   }
 
   const items = await getFileLink(ids);
-  const links = items
-  .filter(item => !item.is_dir)
-  .map(file => file.url);
+  const links = items.filter((item) => !item.is_dir).map((file) => file.url);
 
   return { ok: true as const, links };
 }

@@ -5,7 +5,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function DesktopFileListSkeleton() {
   return (
     <div className="hidden overflow-x-auto md:block">
-      {/* Header */}
       <div
         className="
           grid min-w-[590px]
@@ -51,27 +50,16 @@ function SkeletonRow({ index }: { index: number }) {
       "
       style={{ minHeight: '72.8px' }}
     >
-      {/* checkbox */}
       <Skeleton className="size-4 rounded-sm" />
-
-      {/* icon + filename */}
       <div className="flex min-w-0 items-center gap-3">
         <Skeleton className="size-6 shrink-0 rounded-md" />
         <Skeleton
           className={`h-5 ${nameWidths[index % nameWidths.length]}`}
         />
       </div>
-
-      {/* type */}
       <Skeleton className="h-4 w-16" />
-
-      {/* size */}
       <Skeleton className="h-4 w-12" />
-
-      {/* date */}
       <Skeleton className="h-4 w-24" />
-
-      {/* menu button */}
       <div className="flex justify-end">
         <Skeleton className="size-6 rounded-full" />
       </div>

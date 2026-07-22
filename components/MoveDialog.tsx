@@ -120,7 +120,6 @@ export default function MoveDialog({
         <DialogHeader>
           <DialogTitle>Move file(s)</DialogTitle>
         </DialogHeader>
-
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Button
@@ -137,7 +136,6 @@ export default function MoveDialog({
               {folderPath.map((folder) => folder.name).join(' / ')}
             </span>
           </div>
-
           <div className="rounded-lg border">
             <button
               type="button"
@@ -148,7 +146,6 @@ export default function MoveDialog({
               <Folder className="size-4 shrink-0" />
               Move here
             </button>
-
             <div className="max-h-64 overflow-auto">
               {loadingFolders ? (
                 <div className="flex items-center gap-2 px-3 py-4 text-sm text-muted-foreground">
@@ -199,10 +196,8 @@ export default function MoveDialog({
               )}
             </div>
           </div>
-
           <FieldError>{error}</FieldError>
         </div>
-
         <DialogFooter>
           <DialogClose render={<Button variant="outline">Cancel</Button>} />
           <Button onClick={handleMove} disabled={moving || !ids.length}>

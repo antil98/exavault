@@ -6,7 +6,6 @@ export default function FileToolbarSkeleton() {
       <div className="min-h-9 flex w-full items-center">
         <Skeleton className="h-5 w-40" />
       </div>
-
       <Skeleton className="h-8 w-40 rounded-lg md:hidden" />
     </div>
   );
