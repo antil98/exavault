@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         return {
           allowedContentTypes,
           addRandomSuffix: true,
-          callbackUrl: 'https://exavault.vercel.app/api/upload',
+          callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/upload`,
           tokenPayload: JSON.stringify({
             ...parsedPayload,
             ownerId: userId,
