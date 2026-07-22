@@ -6,6 +6,7 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import SonnerProvider from '@/components/SonnerProvider';
 
 const fontSans = Poppins({
   subsets: ['latin'],
@@ -54,7 +55,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <main className="flex-1">{children}</main>
-            <Toaster  richColors position="bottom-right" />
+            <SonnerProvider />
           </ThemeProvider>
         </ClerkProvider>
       </body>

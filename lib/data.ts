@@ -1,6 +1,6 @@
 import { sql } from '@/lib/db';
 import { FileItem } from '@/types/file-type';
-import { getUniqueName } from './utils';
+import getUniqueName from '@/lib/get-unique-name';
 
 export async function createUserRootFolder(userId: string) {
   await sql`
@@ -75,7 +75,7 @@ export async function getFilesByParent(
   page: number = 1,
   pageSize: number = 20,
 ): Promise<FileItem[]> {
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  // await new Promise((resolve) => setTimeout(resolve, 5000));
 
   const result = parentId
     ? await sql`
@@ -133,6 +133,16 @@ export async function getFileTree(
       AND NOT f.id = ANY(t.path)
     )
     SELECT * FROM tree;
+  `;
+
+  return result as FileItem[];
+}
+
+export async function getFileLink(ids: string[]) {
+  const result = await sql`
+    SELECT url, is_dir
+    FROM files
+    WHERE id = ANY(${ids})
   `;
 
   return result as FileItem[];

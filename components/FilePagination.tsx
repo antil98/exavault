@@ -9,7 +9,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { getPaginationItems } from '@/lib/utils';
+import getPaginationItems from '@/lib/get-pagination-items';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 export default function FilePagination({

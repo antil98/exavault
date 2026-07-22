@@ -91,7 +91,6 @@ export default function RenameDialog({
           <DialogHeader>
             <DialogTitle>Rename</DialogTitle>
           </DialogHeader>
-
           <FieldGroup className="my-5">
             <Field>
               <Label htmlFor={inputId}>New name</Label>
@@ -117,22 +116,21 @@ export default function RenameDialog({
               <FieldError id={errorId}>{error}</FieldError>
             </Field>
           </FieldGroup>
-
           <DialogFooter>
             <DialogClose render={<Button variant="outline">Cancel</Button>} />
             <Button
               type="submit"
               disabled={loading || !name.trim() || name.trim() === displayName}
-              className="relative"
+              className="relative min-w-[8rem] overflow-hidden"
             >
               <span className={loading ? 'opacity-0' : 'opacity-100'}>
                 Rename
               </span>
 
               {loading && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <LoaderCircle className="mr-1 animate-spin" />
-                  Renaming...
+                <span className="absolute inset-0 flex items-center justify-center gap-1.5 px-2">
+                  <LoaderCircle className="size-4 shrink-0 animate-spin" />
+                  <span className="truncate">Renaming...</span>
                 </span>
               )}
             </Button>

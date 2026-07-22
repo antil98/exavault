@@ -25,11 +25,13 @@ import {
   Move,
   EllipsisVertical,
   RotateCcw,
+  Share2,
 } from 'lucide-react';
 import { downloadFiles } from '@/lib/download-files';
 import {
   deleteForeverAction,
   restoreFilesAction,
+  shareFilesAction,
   trashFilesAction,
 } from '@/app/actions/files';
 import {
@@ -47,6 +49,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import RenameDialog from './RenameDialog';
 import MoveDialog from './MoveDialog';
+import ShareDialog from './ShareDialog';
 
 export default function FileActionsMenu({
   menuType,
@@ -77,6 +80,7 @@ export default function FileActionsMenu({
 }) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const router = useRouter();
   const effectiveIds =
@@ -149,6 +153,26 @@ export default function FileActionsMenu({
     }
   }
 
+  async function handleShare() {
+    if (effectiveIds.length > 1) {
+      const result = await shareFilesAction(effectiveIds);
+
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
+
+      console.log(result.links)
+
+      await navigator.clipboard.writeText(result.links.join('\n'));
+
+      toast.success(`${result.links.length} links copied to clipboard`);
+      return;
+    }
+
+    setShareDialogOpen(true);
+  }
+
   return (
     <>
       {menuType === 'dropdown' && (
@@ -189,6 +213,13 @@ export default function FileActionsMenu({
                       <Move />
                       Move to...
                     </DropdownMenuItem>
+                    <DropdownMenuItem
+                      disabled={!canRename}
+                      onClick={handleShare}
+                    >
+                      <Share2 />
+                      Share
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleTrash}>
                       <Trash2 />
                       Move to trash
@@ -215,7 +246,6 @@ export default function FileActionsMenu({
           </DropdownMenu>
         </div>
       )}
-
       {menuType === 'context' && (
         <ContextMenu>
           <ContextMenuTrigger>{children}</ContextMenuTrigger>
@@ -229,17 +259,21 @@ export default function FileActionsMenu({
                     <Download />
                     Download
                   </ContextMenuItem>
-                    <ContextMenuItem
-                      disabled={!canRename}
-                      onClick={() => setRenameDialogOpen(true)}
-                    >
-                      <Pencil />
-                      Rename
-                    </ContextMenuItem>
+                  <ContextMenuItem
+                    disabled={!canRename}
+                    onClick={() => setRenameDialogOpen(true)}
+                  >
+                    <Pencil />
+                    Rename
+                  </ContextMenuItem>
                   <ContextMenuItem onClick={() => setMoveDialogOpen(true)}>
                     <Move />
                     Move to...
                   </ContextMenuItem>
+                  <DropdownMenuItem onClick={handleShare}>
+                    <Share2 />
+                    Share
+                  </DropdownMenuItem>
                   <ContextMenuItem onClick={handleTrash}>
                     <Trash2 />
                     Move to trash
@@ -261,7 +295,6 @@ export default function FileActionsMenu({
           </ContextMenuContent>
         </ContextMenu>
       )}
-
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -279,7 +312,6 @@ export default function FileActionsMenu({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
       <RenameDialog
         open={renameDialogOpen}
         onOpenChange={setRenameDialogOpen}
@@ -287,13 +319,17 @@ export default function FileActionsMenu({
         currentName={primaryName ?? ''}
         isDir={primaryIsDir ?? false}
       />
-
       <MoveDialog
         open={moveDialogOpen}
         onOpenChange={setMoveDialogOpen}
         ids={effectiveIds}
         userRootFolder={userRootFolder}
         onClearSelection={onClearSelection}
+      />
+      <ShareDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        id={effectiveIds[0]}
       />
     </>
   );

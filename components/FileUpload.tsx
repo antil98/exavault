@@ -119,11 +119,11 @@ export default function FileUpload({
         onClick={handleClick}
         disabled={uploading}
         className="
-          h-10 gap-2.5 rounded-lg border border-sidebar-border/80 bg-background/80 px-3 font-medium shadow-xs 
+          h-10 text-[16px] gap-2.5 rounded-lg border border-sidebar-border/80 bg-background/80 px-3 shadow-xs 
           hover:bg-background hover:text-foreground hover:shadow-sm 
         "
       >
-        {uploading ? <LoaderCircle className="animate-spin" /> : <Upload />}
+        {uploading ? <LoaderCircle className="animate-spin" /> : <Upload className="size-5" />}
         <span className="group-data-[collapsible=icon]:hidden">
           {uploading ? 'Uploading...' : buttonLabel}
         </span>

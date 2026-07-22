@@ -69,22 +69,20 @@ export default function CreateFolder({
         render={
           <SidebarMenuButton
             tooltip={buttonLabel}
-            className="h-10"
+            className="h-10 text-[16px]"
           >
-            <Plus />
+            <Plus className="size-5" />
             <span className="group-data-[collapsible=icon]:hidden">
               {buttonLabel}
             </span>
           </SidebarMenuButton>
         }
       />
-
       <DialogContent className="sm:max-w-sm">
         <form onSubmit={handleCreate}>
           <DialogHeader>
             <DialogTitle>Create Folder</DialogTitle>
           </DialogHeader>
-
           <FieldGroup>
             <Field>
               <Label htmlFor="folder-name" className="mt-5 mb-2">
@@ -99,7 +97,6 @@ export default function CreateFolder({
               />
             </Field>
           </FieldGroup>
-
           <DialogFooter>
             <DialogClose render={<Button variant="outline">Cancel</Button>} />
             <Button
@@ -110,7 +107,6 @@ export default function CreateFolder({
               <span className={loading ? 'opacity-0' : 'opacity-100'}>
                 Create Folder
               </span>
-
               {loading && (
                 <span className="absolute inset-0 flex items-center justify-center">
                   <LoaderCircle className="animate-spin mr-1" />

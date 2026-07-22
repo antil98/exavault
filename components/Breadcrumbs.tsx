@@ -57,7 +57,7 @@ export default async function Breadcrumbs({
                     <BreadcrumbPage>
                       {item.name === 'root' ? (
                         <div className="flex items-center gap-2 text-xl">
-                          <House className="w-5 h-5 text-accent" />
+                          <House className="w-5 h-5" />
                           <span className="text-xl font-semibold" aria-hidden>
                             /
                           </span>
@@ -71,7 +71,7 @@ export default async function Breadcrumbs({
                     <BreadcrumbLink href={`/${fileViewPage}/${item.id}`}>
                       {item.name === 'root' ? (
                         <div className="flex items-center gap-2 text-xl">
-                          <House className="w-5 h-5 text-accent" />
+                          <House className="w-5 h-5" />
                           <span className="text-xl font-semibold" aria-hidden>
                             /
                           </span>

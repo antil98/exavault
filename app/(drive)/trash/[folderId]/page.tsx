@@ -43,10 +43,7 @@ export default async function Page(props: {
       <div className="space-y-6 p-4 md:p-6">
         <div className="space-y-5">
           <div className="flex flex-wrap justify-between gap-3">
-            <div className="flex gap-2 items-center mx-auto lg:mx-0">
-              <Trash2 className="w-8 h-8" />
-              <h2 className="text-3xl font-semibold">Recycle bin</h2>
-            </div>
+            <h2 className="text-3xl font-semibold">Recycle bin</h2>
             <FileSearch />
           </div>
         </div>

@@ -110,10 +110,10 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
                   onClick={closeSidebar}
                 >
                   <SidebarMenuButton
-                    className="w-full"
+                    className="w-full text-[16px]"
                     isActive={pathname.startsWith('/files')}
                   >
-                    <FolderOpen />
+                    <FolderOpen className="size-5" />
                     My files
                   </SidebarMenuButton>
                 </Link>
@@ -125,10 +125,10 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
                   onClick={closeSidebar}
                 >
                   <SidebarMenuButton
-                    className="w-full"
+                    className="w-full text-[16px]"
                     isActive={pathname.startsWith('/trash')}
                   >
-                    <Trash2 />
+                    <Trash2 className="size-5"/>
                     Recycle bin
                   </SidebarMenuButton>
                 </Link>

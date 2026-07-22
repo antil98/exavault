@@ -4,6 +4,9 @@ import { del } from '@vercel/blob';
 import {
   createFolder as createFolderInDb,
   deleteForever as deleteForeverInDb,
+  getFileById,
+  getFileLink,
+  getFilesByParent,
   getFileTree,
   getTrashedFiles,
   moveFiles as moveFilesInDb,
@@ -163,4 +166,20 @@ export async function emptyTrashAction() {
   await deleteForeverInDb(ids, userId);
 
   return { ok: true as const, deletedCount: ids.length };
+}
+
+export async function shareFilesAction(ids: string[]) {
+  if (!Array.isArray(ids) || !ids.length) {
+    return {
+      ok: false as const,
+      message: 'Invalid ids',
+    };
+  }
+
+  const items = await getFileLink(ids);
+  const links = items
+  .filter(item => !item.is_dir)
+  .map(file => file.url);
+
+  return { ok: true as const, links };
 }
