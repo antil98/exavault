@@ -39,6 +39,7 @@ export default function MoveDialog({
   const [loadingFolders, setLoadingFolders] = useState(false);
   const [moving, setMoving] = useState(false);
   const router = useRouter();
+  const currentFolderName = folderPath[folderPath.length - 1]?.name ?? 'Home';
 
   useEffect(() => {
     if (!open) return;
@@ -144,7 +145,7 @@ export default function MoveDialog({
               className="flex w-full items-center gap-2 border-b px-3 py-2 text-left text-sm hover:bg-muted/50 aria-pressed:bg-muted"
             >
               <Folder className="size-4 shrink-0" />
-              Move here
+              {currentFolderName}
             </button>
             <div className="max-h-64 overflow-auto">
               {loadingFolders ? (
@@ -207,7 +208,7 @@ export default function MoveDialog({
                 Moving...
               </>
             ) : (
-              'Move here'
+              'Move'
             )}
           </Button>
         </DialogFooter>
