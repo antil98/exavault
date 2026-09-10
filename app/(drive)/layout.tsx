@@ -1,4 +1,4 @@
-import { getUserRootFolder } from '@/lib/data';
+import { getOrCreateUserRootFolder } from '@/lib/data';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import requireAuth from '@/lib/auth';
@@ -13,14 +13,14 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const userId = await requireAuth();
-  const rootFolderId = await getUserRootFolder(userId);
+  const rootFolder = await getOrCreateUserRootFolder(userId);
 
   return (
     <SidebarProvider>
       <GlobalProvider>
         <FileDropProvider>
           <div className="flex min-h-screen w-full flex-col md:flex-row">
-            <AppSidebar rootFolderId={rootFolderId[0].id} />
+            <AppSidebar rootFolderId={rootFolder.id} />
             <div className="flex items-center border-b px-4 py-3 md:hidden">
               <SidebarTrigger size="lg" />
               <Link

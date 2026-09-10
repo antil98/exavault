@@ -42,6 +42,12 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
   };
 
   const { user } = useUser();
+  const displayName =
+    user?.fullName ??
+    user?.firstName ??
+    user?.username ??
+    user?.primaryEmailAddress?.emailAddress.split('@')[0] ??
+    'Account';
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -128,7 +134,7 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
                     className="w-full text-[16px]"
                     isActive={pathname.startsWith('/trash')}
                   >
-                    <Trash2 className="size-5"/>
+                    <Trash2 className="size-5" />
                     Recycle bin
                   </SidebarMenuButton>
                 </Link>
@@ -147,7 +153,7 @@ export function AppSidebar({ rootFolderId }: { rootFolderId: string }) {
             >
               <UserButton />
               <span className="group-data-[collapsible=icon]:hidden">
-                {user?.firstName}
+                {displayName}
               </span>
             </div>
           </Show>

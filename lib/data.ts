@@ -36,6 +36,24 @@ export async function getUserRootFolder(userId: string) {
   `;
 }
 
+export async function getOrCreateUserRootFolder(userId: string) {
+  const rootFolder = await getUserRootFolder(userId);
+
+  if (rootFolder.length > 0) {
+    return rootFolder[0];
+  }
+
+  await createUserRootFolder(userId);
+
+  const createdRootFolder = await getUserRootFolder(userId);
+
+  if (createdRootFolder.length === 0) {
+    throw new Error(`Unable to create root folder for user ${userId}`);
+  }
+
+  return createdRootFolder[0];
+}
+
 export async function getAllUserFiles(ownerId: string) {
   return await sql`
     SELECT *
@@ -165,6 +183,16 @@ export async function uploadFile({
   ownerId: string;
   fileType: string;
 }) {
+  const existingUpload = await sql`
+    SELECT id
+    FROM files
+    WHERE owner_id = ${ownerId}
+    AND url = ${url}
+    LIMIT 1
+  `;
+
+  if (existingUpload.length > 0) return;
+
   const existingFile = await getAllFilesInFolder(parentId, ownerId);
   const existingNames = existingFile.map((file) => file.name);
   const finalName = getUniqueName(name, existingNames);

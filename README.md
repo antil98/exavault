@@ -119,6 +119,7 @@ Create the required environment variables:
 ```bash
 DATABASE_URL=
 BLOB_READ_WRITE_TOKEN=
+NEXT_PUBLIC_APP_URL=https://your-public-app.example.com
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 CLERK_SECRET_KEY=
 CLERK_WEBHOOK_SECRET=
@@ -134,7 +135,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment Notes
 
-For deployed uploads, the Vercel Blob callback URL must point to a public route that Vercel Blob can reach. In local development, use a tunnel if you need to test the callback end-to-end.
+For deployed uploads, `NEXT_PUBLIC_APP_URL` must point to the public application URL that Vercel Blob can reach. Local uploads do not require a tunnel: the browser calls the authenticated `/api/upload/complete` route after Blob finishes uploading. A public callback URL is still used when available for server-to-server completion handling.
 
 Clerk webhook delivery also requires a public URL in development. Use Clerk webhook tooling or a tunnel when testing local webhook behavior.
 

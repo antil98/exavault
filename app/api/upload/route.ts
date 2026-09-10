@@ -38,13 +38,18 @@ export async function POST(req: Request) {
         const userId = await requireAuth();
 
         const parsedPayload = JSON.parse(clientPayload ?? '{}');
+        const appUrl =
+          process.env.NEXT_PUBLIC_APP_URL ??
+          process.env.VERCEL_BLOB_CALLBACK_URL;
 
         return {
           allowedContentTypes,
           addRandomSuffix: true,
-          // Vercel Blob must call back to a publicly reachable endpoint after the upload
-          // completes. This URL should point to your deployed application.
-          callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/upload`,
+          // On local development, the client finalizes the DB row through
+          // /api/upload/complete because Blob cannot reach localhost.
+          ...(appUrl
+            ? { callbackUrl: `${appUrl.replace(/\/$/, '')}/api/upload` }
+            : {}),
           tokenPayload: JSON.stringify({
             ...parsedPayload,
             ownerId: userId,
@@ -68,12 +73,14 @@ export async function POST(req: Request) {
           });
         } catch (err) {
           console.error('Upload callback failed:', err);
+          throw err;
         }
       },
     });
 
     return Response.json(jsonResponse);
-  } catch {
+  } catch (err) {
+    console.error('Upload route failed:', err);
     return new Response('Upload failed', { status: 500 });
   }
 }

@@ -48,10 +48,10 @@ export default function FileUpload({
 
       try {
         await Promise.all(
-          selectedFiles.map((file) => {
+          selectedFiles.map(async (file) => {
             const pathname = `${currentFolderId}/${file.name}`;
             // Replace this upload invocation with the equivalent API for your provider.
-            return upload(pathname, file, {
+            const blob = await upload(pathname, file, {
               access: 'public',
               handleUploadUrl: '/api/upload',
               clientPayload: JSON.stringify({
@@ -61,6 +61,23 @@ export default function FileUpload({
                 fileType: file.type,
               }),
             });
+
+            const completion = await fetch('/api/upload/complete', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                url: blob.url,
+                pathname: blob.pathname,
+                parentId: currentFolderId,
+                size: file.size,
+                name: file.name,
+                fileType: file.type,
+              }),
+            });
+
+            if (!completion.ok) {
+              throw new Error('File metadata could not be saved');
+            }
           }),
         );
 
