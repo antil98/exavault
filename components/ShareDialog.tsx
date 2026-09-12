@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import CopyButton from './CopyToClipboardButton';
 import { useState, useEffect } from 'react';
 import { shareFilesAction } from '@/app/actions/files';
-import { LoaderCircle, TriangleAlert } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 
 export default function ShareDialog({
   open,
@@ -70,8 +70,7 @@ export default function ShareDialog({
             )}
           </Field>
         </FieldGroup>
-        <DialogFooter className="sm:justify-start gap-2 text-sm text-amber-600 dark:text-amber-400">
-          <TriangleAlert className="size-4 shrink-0" />
+        <DialogFooter className="sm:justify-start text-sm text-muted-foreground">
           <p>Anyone with the link can view or download the file.</p>
         </DialogFooter>
       </DialogContent>

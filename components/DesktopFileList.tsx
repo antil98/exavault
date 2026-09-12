@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useRef, useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { File, Folder, MoveUp, MoveDown } from 'lucide-react';
 import FileActionsMenu from '@/components/FileActionsMenu';
@@ -57,6 +57,15 @@ export default function DesktopFileList({
 
   const dateColumnLabel =
     fileViewPage === 'files' ? 'Uploaded at' : 'Date deleted';
+  const selectAllRef = useRef<HTMLInputElement>(null);
+  const allSelected = files.length > 0 && selectedIdSet.size === files.length;
+  const someSelected = selectedIdSet.size > 0 && !allSelected;
+
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate = someSelected;
+    }
+  }, [someSelected]);
 
   return (
     <div data-file-list className="hidden overflow-x-auto md:block">
@@ -66,7 +75,16 @@ export default function DesktopFileList({
           gap-4 px-3 py-2 font-medium text-muted-foreground border-b
         "
       >
-        <div></div>
+        <div onClick={(e) => e.stopPropagation()}>
+          <input
+            ref={selectAllRef}
+            type="checkbox"
+            checked={allSelected}
+            onChange={() => select('', 'toggle-all', orderedIds)}
+            aria-label="Select all files"
+            className="size-4 rounded border-border accent-primary"
+          />
+        </div>
         <SortableHeader
           label={getSortLabel('name')}
           onClick={() => onSort('name')}

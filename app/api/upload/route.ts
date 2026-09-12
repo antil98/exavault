@@ -1,8 +1,7 @@
 // Storage provider integration point.
 // This route implements the upload flow for Vercel Blob.
-// Replace `handleUpload` and its callbacks if migrating to another storage provider.
+// Replace `handleUpload` if migrating to another storage provider.
 import { handleUpload } from '@vercel/blob/client';
-import { uploadFile } from '../../../lib/data';
 import requireAuth from '@/lib/auth';
 
 const allowedContentTypes = [
@@ -38,43 +37,14 @@ export async function POST(req: Request) {
         const userId = await requireAuth();
 
         const parsedPayload = JSON.parse(clientPayload ?? '{}');
-        const appUrl =
-          process.env.NEXT_PUBLIC_APP_URL ??
-          process.env.VERCEL_BLOB_CALLBACK_URL;
-
         return {
           allowedContentTypes,
           addRandomSuffix: true,
-          // On local development, the client finalizes the DB row through
-          // /api/upload/complete because Blob cannot reach localhost.
-          ...(appUrl
-            ? { callbackUrl: `${appUrl.replace(/\/$/, '')}/api/upload` }
-            : {}),
           tokenPayload: JSON.stringify({
             ...parsedPayload,
             ownerId: userId,
           }),
         };
-      },
-      // Vercel Blob requires metadata persistence to happen in this callback after
-      // the upload completes. Other storage providers may not require this flow.
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        try {
-          const parsed = JSON.parse(tokenPayload ?? '{}');
-
-          await uploadFile({
-            url: blob.url,
-            pathname: blob.pathname,
-            parentId: parsed.parentId ?? null,
-            size: parsed.size,
-            name: parsed.originalName,
-            ownerId: parsed.ownerId,
-            fileType: parsed.fileType,
-          });
-        } catch (err) {
-          console.error('Upload callback failed:', err);
-          throw err;
-        }
       },
     });
 

@@ -40,11 +40,8 @@ export default async function Page(props: {
   return (
     <div className="w-full min-h-screen">
       <div className="space-y-6 p-4 md:p-6">
-        <div className="space-y-5">
-          <div className="flex flex-wrap justify-between gap-3">
-            <h2 className="text-3xl font-semibold">Recycle bin</h2>
-            <FileSearch />
-          </div>
+        <div className="flex justify-end">
+          <FileSearch />
         </div>
         <Breadcrumbs
           currentFolderId={currentFolderId}

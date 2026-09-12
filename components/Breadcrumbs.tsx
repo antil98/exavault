@@ -42,6 +42,7 @@ export default async function Breadcrumbs({
 }) {
   const breadcrumbs = await getBreadcrumbs(currentFolderId, userId);
   const scrollKey = breadcrumbs.map((item) => item.id).join('/');
+  const rootLabel = fileViewPage === 'files' ? 'My files' : 'Recycle bin';
 
   return (
     <Breadcrumb className="mx-auto min-w-0 max-w-full">
@@ -56,38 +57,36 @@ export default async function Breadcrumbs({
                   {isLast ? (
                     <BreadcrumbPage>
                       {item.name === 'root' ? (
-                        <div className="flex items-center gap-2 text-xl">
-                          <House className="w-5 h-5" />
-                          <span className="text-xl font-semibold" aria-hidden>
+                        <div className="flex items-center gap-2 text-lg">
+                          <House className="w-4 h-4" />
+                          <span className="text-lg font-semibold" aria-hidden>
                             /
                           </span>
-                          Home
+                          {rootLabel}
                         </div>
                       ) : (
-                        <span className="text-xl">{item.name}</span>
+                        <span className="text-lg">{item.name}</span>
                       )}
                     </BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink href={`/${fileViewPage}/${item.id}`}>
                       {item.name === 'root' ? (
-                        <div className="flex items-center gap-2 text-xl">
-                          <House className="w-5 h-5" />
-                          <span className="text-xl font-semibold" aria-hidden>
+                        <div className="flex items-center gap-2 text-lg">
+                          <House className="w-4 h-4" />
+                          <span className="text-lg font-semibold" aria-hidden>
                             /
                           </span>
-                          Home
+                          {rootLabel}
                         </div>
                       ) : (
-                        <span className="text-xl">{item.name}</span>
+                        <span className="text-lg">{item.name}</span>
                       )}
                     </BreadcrumbLink>
                   )}
                 </BreadcrumbItem>
 
                 {!isLast && (
-                  <BreadcrumbSeparator
-                    className="text-xl font-semibold"
-                  >
+                  <BreadcrumbSeparator className="text-lg font-semibold">
                     /
                   </BreadcrumbSeparator>
                 )}

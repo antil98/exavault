@@ -38,6 +38,7 @@ export default function FileToolbar({
   select: SelectFiles;
 }) {
   const hasSelection = selectedCount > 0;
+  const allFilesSelected = totalCount > 0 && selectedCount === totalCount;
 
   return (
     <div
@@ -65,7 +66,7 @@ export default function FileToolbar({
 
             {selectedCount < totalCount && (
               <Button
-                className="shrink-0"
+                className="hidden shrink-0 md:inline-flex"
                 variant="secondary"
                 onClick={() => select('', 'toggle-all', orderedIds)}
               >
@@ -89,26 +90,38 @@ export default function FileToolbar({
           </span>
         )}
       </div>
-      <select
-        value={`${sortKey}:${sortDirection}`}
-        onChange={(e) => {
-          const [nextSortKey, nextSortDirection] = e.target.value.split(
-            ':',
-          ) as [SortKey, SortDirection];
-          onSortChange(nextSortKey, nextSortDirection);
-        }}
-        aria-label="Sort files"
-        className="h-8 rounded-lg border border-input bg-background px-2 text-sm md:hidden"
-      >
-        <option value="name:asc">Name A-Z</option>
-        <option value="name:desc">Name Z-A</option>
-        <option value="type:asc">Type A-Z</option>
-        <option value="type:desc">Type Z-A</option>
-        <option value="size:asc">Size smallest</option>
-        <option value="size:desc">Size largest</option>
-        <option value="date:asc">Date oldest</option>
-        <option value="date:desc">Date newest</option>
-      </select>
+      <div className="flex items-center gap-2 md:hidden">
+        <select
+          value={`${sortKey}:${sortDirection}`}
+          onChange={(e) => {
+            const [nextSortKey, nextSortDirection] = e.target.value.split(
+              ':',
+            ) as [SortKey, SortDirection];
+            onSortChange(nextSortKey, nextSortDirection);
+          }}
+          aria-label="Sort files"
+          className="h-8 rounded-lg border border-input bg-background px-2 text-sm"
+        >
+          <option value="name:asc">Name A-Z</option>
+          <option value="name:desc">Name Z-A</option>
+          <option value="type:asc">Type A-Z</option>
+          <option value="type:desc">Type Z-A</option>
+          <option value="size:asc">Size smallest</option>
+          <option value="size:desc">Size largest</option>
+          <option value="date:asc">Date oldest</option>
+          <option value="date:desc">Date newest</option>
+        </select>
+        <Button
+          className="h-8 shrink-0"
+          variant="secondary"
+          disabled={totalCount === 0}
+          onClick={() =>
+            select('', allFilesSelected ? 'clear' : 'toggle-all', orderedIds)
+          }
+        >
+          {allFilesSelected ? 'Cancel selection' : 'Select all'}
+        </Button>
+      </div>
     </div>
   );
 }

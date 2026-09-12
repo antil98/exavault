@@ -12,7 +12,7 @@ The goal of this project is to explore the moving parts behind a real cloud-driv
 - User authentication with Clerk
 - Per-user root folders and protected file ownership
 - File uploads through Vercel Blob
-- Server-to-server upload completion handling
+- Authenticated upload completion handling
 - Folder creation and nested folder browsing
 - Breadcrumb navigation
 - Search with URL query params
@@ -37,7 +37,7 @@ The goal of this project is to explore the moving parts behind a real cloud-driv
 - **Storage:** Vercel Blob
 - **Database:** Neon/Postgres via @neondatabase/serverless
 - **Feedback:** Sonner toasts
-- **Validation and safety:** Server-side ownership checks, signed upload callback payloads, Clerk webhook signature verification
+- **Validation and safety:** Server-side ownership checks, authenticated upload completion, Clerk webhook signature verification
 
 ## Architecture Overview
 
@@ -58,11 +58,11 @@ Authenticated user starts upload
   -> /api/upload generates a Vercel Blob client token
   -> ownerId is stored in the signed token payload
   -> browser uploads directly to Vercel Blob
-  -> Vercel Blob calls /api/upload after completion
-  -> callback inserts the file row using ownerId from the signed payload
+  -> browser calls /api/upload/complete with the Blob result
+  -> authenticated route inserts the file row using the current Clerk user
 ```
 
-This avoids relying on browser cookies during the Vercel Blob callback, because that callback is server-to-server and does not have a Clerk session.
+Using one completion path avoids duplicate database rows when a Blob upload finishes.
 
 <!-- Screenshot suggestion: Add a small architecture diagram image here if you create one later. A simple boxes-and-arrows diagram is enough. -->
 
@@ -76,9 +76,9 @@ Folder operations use recursive SQL to collect descendants before trashing, rest
 
 Selection is owned by the file view and passed down to nested menus. Action components notify the parent when mutations complete so selection can be cleared in the same state owner that renders the selected count.
 
-### Upload Callback Safety
+### Upload Completion Safety
 
-The upload callback endpoint is intentionally public to Clerk middleware because Vercel Blob calls it without user cookies. The user ID is captured during authenticated token generation and later read from the signed callback payload.
+The upload completion endpoint requires the current Clerk session and ignores any client-supplied owner ID. The database layer also ignores repeated completion requests for the same Blob URL.
 
 ### Clerk Webhooks
 
@@ -135,7 +135,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment Notes
 
-For deployed uploads, `NEXT_PUBLIC_APP_URL` must point to the public application URL that Vercel Blob can reach. Local uploads do not require a tunnel: the browser calls the authenticated `/api/upload/complete` route after Blob finishes uploading. A public callback URL is still used when available for server-to-server completion handling.
+Local and deployed uploads call the authenticated `/api/upload/complete` route after Blob finishes uploading. `NEXT_PUBLIC_APP_URL` is not required for upload completion.
 
 Clerk webhook delivery also requires a public URL in development. Use Clerk webhook tooling or a tunnel when testing local webhook behavior.
 
@@ -144,7 +144,7 @@ Clerk webhook delivery also requires a public URL in development. Use Clerk webh
 - No automated test suite yet
 - Database schema and constraints should be documented more formally
 - Some file lifecycle operations can still be improved for retry safety between Blob and database changes
-- Upload callback URL should be environment-driven instead of hardcoded
+- Upload completion could be moved to a server callback if a reliable retry strategy is added
 - The UI is functional but still has room for polish in empty/error/loading states
 
 ## Roadmap
