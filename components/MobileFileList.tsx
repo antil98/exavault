@@ -8,6 +8,7 @@ import { FileItem } from '@/types/file-type';
 import { FileViewPage, SelectFiles } from '@/types/file-view-types';
 import formatFileDate from '@/lib/format-file-date';
 import formatFileSize from '@/lib/format-file-size';
+import getFileIconStyle from '@/lib/get-file-icon-style';
 
 const MOBILE_LONG_PRESS_MS = 450;
 
@@ -93,6 +94,11 @@ export default function MobileFileList({
     <div data-file-list className="block md:hidden space-y-1">
       {files.map((file) => {
         const isSelected = selectedIdSet.has(file.id);
+        const iconStyle = getFileIconStyle(
+          file.name,
+          file.file_type,
+          file.is_dir,
+        );
 
         return (
           <div
@@ -104,8 +110,9 @@ export default function MobileFileList({
             onPointerLeave={handlePointerEnd}
             onClick={(e) => handleClick(e, file.id)}
             onContextMenu={(e) => e.preventDefault()}
-            className={`flex items-center justify-between gap-3 pl-3 py-3 rounded-md bg-black/5 dark:bg-black/30
-              ${isSelected ? 'bg-black/15 dark:bg-white/15' : ''}`}
+            className={`flex items-center justify-between gap-3 rounded-md border border-border/70 px-3 py-3
+              odd:bg-background even:bg-muted/20 hover:bg-primary/[0.04]
+              ${isSelected ? 'bg-primary/10 ring-1 ring-inset ring-primary/30' : ''}`}
           >
             <div className="flex items-center gap-3 min-w-0">
               {selectionMode ? (
@@ -120,10 +127,16 @@ export default function MobileFileList({
                     className="size-4 rounded border-border accent-primary"
                   />
                 </span>
-              ) : file.is_dir ? (
-                <Folder className="size-8 shrink-0 fill-foreground" />
               ) : (
-                <File className="size-8 shrink-0" />
+                <span
+                  className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${iconStyle.container}`}
+                >
+                  {file.is_dir ? (
+                    <Folder className={`size-5 fill-current ${iconStyle.icon}`} />
+                  ) : (
+                    <File className={`size-5 ${iconStyle.icon}`} />
+                  )}
+                </span>
               )}
               <div className="flex flex-col min-w-0">
                 <Link
@@ -135,7 +148,7 @@ export default function MobileFileList({
                 >
                   {file.name}
                 </Link>
-                <div className="flex flex-col sm:flex-row sm:gap-3 min-w-0 text-muted-foreground mt-1">
+                <div className="mt-1 flex min-w-0 flex-col text-sm text-muted-foreground sm:flex-row sm:gap-3">
                   <span className="truncate">
                     {file.file_type ? file.file_type : 'Folder'}
                   </span>

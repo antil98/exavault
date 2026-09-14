@@ -14,6 +14,7 @@ import {
 } from '@/types/file-view-types';
 import formatFileDate from '@/lib/format-file-date';
 import formatFileSize from '@/lib/format-file-size';
+import getFileIconStyle from '@/lib/get-file-icon-style';
 
 export default function DesktopFileList({
   files,
@@ -72,7 +73,8 @@ export default function DesktopFileList({
       <div
         className="
           grid min-w-[590px] grid-cols-[15px_minmax(0,1fr)_100px_90px_150px_40px]
-          gap-4 px-3 py-2 font-medium text-muted-foreground border-b
+          gap-4 border-y bg-muted/60 px-3 py-2 text-sm font-semibold uppercase
+          tracking-wide text-muted-foreground
         "
       >
         <div onClick={(e) => e.stopPropagation()}>
@@ -117,6 +119,11 @@ export default function DesktopFileList({
       </div>
       {files.map((file) => {
         const isSelected = selectedIdSet.has(file.id);
+        const iconStyle = getFileIconStyle(
+          file.name,
+          file.file_type,
+          file.is_dir,
+        );
 
         return (
           <div key={file.id}>
@@ -154,8 +161,9 @@ export default function DesktopFileList({
                 className={`
                   grid min-w-[590px] grid-cols-[15px_minmax(0,1fr)_100px_90px_150px_40px]
                   gap-4 items-center px-3 py-3 transition
-                  border-b border-border hover:bg-black/5 hover:dark:bg-white/10
-                  ${isSelected ? 'bg-black/15 dark:bg-white/15' : ''}
+                  border-b border-border/70 odd:bg-background even:bg-muted/20
+                  hover:bg-primary/[0.04]
+                  ${isSelected ? 'bg-primary/10 ring-1 ring-inset ring-primary/30' : ''}
                 `}
               >
                 <div onClick={(e) => e.stopPropagation()}>
@@ -167,12 +175,16 @@ export default function DesktopFileList({
                     className="size-4 rounded border-border accent-primary"
                   />
                 </div>
-                <div className="flex items-center gap-3 min-w-0">
-                  {file.is_dir ? (
-                    <Folder className="size-6 shrink-0 fill-foreground" />
-                  ) : (
-                    <File className="size-6 shrink-0" />
-                  )}
+                <div className="flex min-w-0 items-center gap-3">
+                  <span
+                    className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${iconStyle.container}`}
+                  >
+                    {file.is_dir ? (
+                      <Folder className={`size-5 fill-current ${iconStyle.icon}`} />
+                    ) : (
+                      <File className={`size-5 ${iconStyle.icon}`} />
+                    )}
+                  </span>
                   <Link
                     href={
                       file.is_dir ? `/${fileViewPage}/${file.id}` : file.url
@@ -189,13 +201,13 @@ export default function DesktopFileList({
                   </Link>
                 </div>
                 <div
-                  className="text-muted-foreground truncate"
+                  className="truncate text-sm text-muted-foreground"
                   title={file.file_type ? file.file_type : 'Folder'}
                 >
                   {file.file_type ? file.file_type : 'Folder'}
                 </div>
                 <div
-                  className="text-muted-foreground truncate"
+                  className="truncate text-sm tabular-nums text-muted-foreground"
                   title={
                     formatFileSize(file.size) === '0 B'
                       ? '—'
@@ -207,7 +219,7 @@ export default function DesktopFileList({
                     : formatFileSize(file.size)}
                 </div>
                 <div
-                  className="text-muted-foreground truncate"
+                  className="truncate text-sm tabular-nums text-muted-foreground"
                   title={file.created_at}
                 >
                   {fileViewPage === 'files'
