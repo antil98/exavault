@@ -132,7 +132,9 @@ export default function MobileFileList({
                   className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${iconStyle.container}`}
                 >
                   {file.is_dir ? (
-                    <Folder className={`size-5 fill-current ${iconStyle.icon}`} />
+                    <Folder
+                      className={`size-5 fill-current ${iconStyle.icon}`}
+                    />
                   ) : (
                     <File className={`size-5 ${iconStyle.icon}`} />
                   )}
