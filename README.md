@@ -1,172 +1,170 @@
 # Exavault
 
-Exavault is a full-stack file manager built with Next.js App Router. It supports authenticated user spaces, folder navigation, uploads to Vercel Blob, bulk file actions, trash/restore workflows, ZIP downloads, search, pagination, and Clerk-powered account management.
-
-The goal of this project is to explore the moving parts behind a real cloud-drive style product: auth, server actions, database ownership rules, object storage callbacks, recursive folder operations, and client-side selection state.
-
-<!-- Screenshot suggestion: Add a wide desktop screenshot of the main "My files" view showing the sidebar, breadcrumbs, search input, file table, and action buttons. -->
-<!-- Screenshot suggestion: Add a second screenshot showing selected files with the bulk action toolbar visible. -->
+Exavault is a cloud-drive-style file manager built with Next.js App Router. It provides per-user file spaces, nested folders, uploads to Vercel Blob, search, bulk actions, trash and restore, and ZIP downloads.
 
 ## Features
 
-- User authentication with Clerk
-- Per-user root folders and protected file ownership
-- File uploads through Vercel Blob
-- Authenticated upload completion handling
-- Folder creation and nested folder browsing
-- Breadcrumb navigation
-- Search with URL query params
-- Pagination
-- Desktop table view and mobile-friendly file cards
+- Clerk sign-in and sign-up
+- Per-user root folders and server-side ownership checks
+- Public file uploads to Vercel Blob
+- Folder creation, nested navigation, breadcrumbs, search, and pagination
+- Desktop file table and mobile file cards
 - Single and bulk selection
-- Context menus and dropdown action menus
-- Rename, move, trash, restore, and permanent delete actions
-- Recursive folder operations for trash, restore, delete, and ZIP download
-- ZIP download generation for multiple files or folders
-- Clerk webhook handling for user lifecycle events
+- Rename, move, trash, restore, and permanent deletion
+- ZIP downloads for selected files and folders
+- Clerk webhooks for user creation and deletion
 
-<!-- Screenshot suggestion: Add a screenshot of the move dialog open, ideally showing nested folders and the "Move here" action. -->
-<!-- Screenshot suggestion: Add a screenshot of the trash page showing restore/delete actions. -->
+## Tech stack
 
-## Tech Stack
+- Next.js 16, React 19, and TypeScript
+- Tailwind CSS, Base UI, and Lucide icons
+- Clerk authentication
+- Neon serverless PostgreSQL
+- Vercel Blob object storage
 
-- **Framework:** Next.js App Router
-- **Language:** TypeScript
-- **UI:** React, Tailwind CSS, shadcn-style components, Base UI, lucide-react
-- **Auth:** Clerk
-- **Storage:** Vercel Blob
-- **Database:** Neon/Postgres via @neondatabase/serverless
-- **Feedback:** Sonner toasts
-- **Validation and safety:** Server-side ownership checks, authenticated upload completion, Clerk webhook signature verification
+## Prerequisites
 
-## Architecture Overview
+- Node.js (use a currently supported LTS release)
+- pnpm
+- Accounts/projects for Clerk, Neon, and Vercel Blob
 
-Exavault separates user-facing interaction from server-side ownership checks. Client components handle selection, menus, dialogs, and navigation. Server actions and route handlers validate the current Clerk user before mutating files. Database functions receive an owner ID and use it to scope reads and writes.
+## Installation
 
-```txt
-Client UI
-  -> Server Actions / Route Handlers
-    -> Clerk auth()
-    -> Database queries scoped by owner_id
-    -> Vercel Blob for object storage
+1. Clone the repository and install dependencies:
+
+   ```bash
+   git clone https://github.com/antil98/exavault.git
+   cd exavault
+   pnpm install
+   ```
+
+2. Create a `.env.local` file in the project root and add the required keys below.
+
+3. Create a Neon Postgres project, copy its connection string into `DATABASE_URL`, and create the `files` table using the SQL in [Database setup](#database-setup).
+
+4. Create a Clerk application and a Vercel Blob store, then add their keys to `.env.local` as described below.
+
+5. Start the development server:
+
+   ```bash
+   pnpm dev
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000), create an account, and start using Exavault.
+
+### Required development keys
+
+Put these values in `.env.local`. Do not commit this file or expose secret keys in client-side code.
+
+| Variable | Required for | Where to get it |
+| --- | --- | --- |
+| `DATABASE_URL` | Database access | In the [Neon Console](https://console.neon.tech), open your project and select **Connect**. Choose a branch, database, and role, then copy the connection string. The pooled connection string is suitable for this app. See [Neon's connection guide](https://neon.com/docs/connect/connect-from-any-app). |
+| `BLOB_READ_WRITE_TOKEN` | Uploading and deleting stored files | Create a Blob store from your Vercel project's **Storage** tab. Include the **Development** environment when creating the store so the token is available locally. Vercel documents this in [Using the Blob SDK](https://vercel.com/docs/vercel-blob/using-blob-sdk). |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk authentication in the browser | Create or select an application in the [Clerk Dashboard](https://dashboard.clerk.com/), then copy the publishable key from **API Keys**. See Clerk's [Next.js quickstart](https://clerk.com/docs/nextjs/getting-started/quickstart). |
+| `CLERK_SECRET_KEY` | Server-side Clerk authentication | Copy the secret key for the same Clerk application from its **API Keys** page. Keep it private. See Clerk's [Next.js quickstart](https://clerk.com/docs/nextjs/getting-started/quickstart). |
+
+Example (replace each placeholder with the value from the corresponding provider):
+
+```dotenv
+DATABASE_URL="postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require"
+BLOB_READ_WRITE_TOKEN="vercel_blob_rw_..."
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."
 ```
 
-Upload is handled as a two-step flow:
+### Optional Clerk webhooks
 
-```txt
-Authenticated user starts upload
-  -> /api/upload generates a Vercel Blob client token
-  -> ownerId is stored in the signed token payload
-  -> browser uploads directly to Vercel Blob
-  -> browser calls /api/upload/complete with the Blob result
-  -> authenticated route inserts the file row using the current Clerk user
+`CLERK_WEBHOOK_SECRET` is needed only if you configure Clerk to call the user lifecycle webhook. The handler is `/api/webhooks/clerk` and processes `user.created` and `user.deleted` events.
+
+In the Clerk Dashboard, create a webhook endpoint pointing to `https://<your-public-host>/api/webhooks/clerk`, subscribe it to **user.created** and **user.deleted**, and copy that endpoint's **Signing Secret** into `.env.local`:
+
+```dotenv
+CLERK_WEBHOOK_SECRET="whsec_..."
 ```
 
-Using one completion path avoids duplicate database rows when a Blob upload finishes.
+The signing secret is shown for the endpoint in the [Clerk Webhooks dashboard](https://dashboard.clerk.com/~/webhooks). See [Clerk's webhooks guide](https://clerk.com/docs/guides/development/webhooks/overview) for details. For local testing, expose the development server through an HTTPS tunnel and use its public URL as the webhook endpoint. Restart the dev server after changing environment variables.
 
-<!-- Screenshot suggestion: Add a small architecture diagram image here if you create one later. A simple boxes-and-arrows diagram is enough. -->
+The app does not use `NEXT_PUBLIC_APP_URL` for its current upload flow. Clerk's webhook sender must be able to reach the endpoint; a localhost URL alone is not reachable from Clerk.
 
-## Notable Implementation Details
+## Database setup
 
-### Recursive File Trees
+This repository does not currently include a migration runner or schema migration files. Run the following SQL once against the Neon database selected by `DATABASE_URL` (for example, from the Neon SQL Editor):
 
-Folder operations use recursive SQL to collect descendants before trashing, restoring, deleting, or downloading folder contents. This lets bulk operations work on both files and folders while preserving ownership checks.
+```sql
+CREATE TABLE IF NOT EXISTS files (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  parent_id UUID REFERENCES files(id) ON DELETE CASCADE,
+  owner_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  url TEXT,
+  pathname TEXT,
+  size DOUBLE PRECISION NOT NULL DEFAULT 0,
+  file_type TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  is_dir BOOLEAN NOT NULL DEFAULT FALSE,
+  is_trashed BOOLEAN NOT NULL DEFAULT FALSE,
+  original_location UUID,
+  deleted_at TIMESTAMPTZ
+);
 
-### Selection State
+CREATE INDEX IF NOT EXISTS files_owner_parent_idx
+  ON files (owner_id, parent_id);
 
-Selection is owned by the file view and passed down to nested menus. Action components notify the parent when mutations complete so selection can be cleared in the same state owner that renders the selected count.
+CREATE INDEX IF NOT EXISTS files_owner_trash_parent_idx
+  ON files (owner_id, is_trashed, parent_id);
+```
 
-### Upload Completion Safety
+`url`, `pathname`, and `file_type` may be null for folders. A user's root folder is created automatically the first time the authenticated user accesses the file area; the Clerk `user.created` webhook can also create it.
 
-The upload completion endpoint requires the current Clerk session and ignores any client-supplied owner ID. The database layer also ignores repeated completion requests for the same Blob URL.
+## Development commands
 
-### Clerk Webhooks
+```bash
+pnpm dev      # Start the local development server
+pnpm lint     # Run ESLint
+pnpm build    # Create a production build
+pnpm start    # Serve the production build
+```
 
-Clerk webhooks are used to react to user lifecycle events, such as creating a root folder for new users and cleaning up user-owned database/blob data when an account is deleted.
+## How it works
 
-## Project Structure
+```text
+Browser
+  -> Next.js server actions and route handlers
+    -> Clerk authentication and per-user authorization
+    -> Neon Postgres for file and folder metadata
+    -> Vercel Blob for file contents
+```
 
-```txt
+Uploads use a two-step flow: `/api/upload` creates an authenticated Blob client token, then `/api/upload/complete` records the uploaded object's metadata for the currently authenticated user. The completion handler does not trust a client-supplied owner ID.
+
+File and folder operations are scoped to the authenticated Clerk user. Recursive SQL is used for folder tree operations such as moving, trashing, restoring, and preparing ZIP downloads.
+
+## Project structure
+
+```text
 app/
-  (drive)/              Protected file manager routes
-  actions/              Server actions for file mutations
-  api/                  Upload, download, folders, and webhook routes
-  sign-in/, sign-up/    Clerk auth pages
-components/
-  ui/                   Reusable UI primitives
-  FileView.tsx          Main file explorer surface and selection owner
-  FileActionsMenu.tsx   Per-file context/dropdown actions
-  BulkActions.tsx       Bulk action toolbar
-  MoveDialog.tsx        Folder move workflow
-lib/
-  data.ts               Database access and file/folder domain operations
-  update-selection.ts   Pure selection state transition helper
-  download-files.ts     Browser download helper
-hooks/
-  useSelection.ts       Local selection hook
+  (drive)/             Protected file manager routes
+  actions/             Server actions for file mutations
+  api/                 Upload, download, folders, and webhook routes
+  sign-in/, sign-up/   Clerk authentication pages
+components/            File manager UI and reusable components
+components/ui/         UI primitives
+hooks/                 Client-side hooks
+lib/data.ts            Database queries and file/folder operations
+lib/db.ts              Neon database connection
+proxy.ts               Request and authentication proxy
+types/                 Shared TypeScript types
 ```
 
-## Getting Started
+## Deployment notes
 
-Install dependencies:
+- Set the four required environment variables in the deployment environment.
+- Set `CLERK_WEBHOOK_SECRET` if the Clerk webhook endpoint is enabled; configure its URL to use the deployed domain.
+- Apply the database SQL in the production Neon database before serving requests.
+- The configured Blob store must be available to the deployment environment.
 
-```bash
-pnpm install
-```
+## Current limitations
 
-Create the required environment variables:
-
-```bash
-DATABASE_URL=
-BLOB_READ_WRITE_TOKEN=
-NEXT_PUBLIC_APP_URL=https://your-public-app.example.com
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
-CLERK_SECRET_KEY=
-CLERK_WEBHOOK_SECRET=
-```
-
-Run the development server:
-
-```bash
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-## Environment Notes
-
-Local and deployed uploads call the authenticated `/api/upload/complete` route after Blob finishes uploading. `NEXT_PUBLIC_APP_URL` is not required for upload completion.
-
-Clerk webhook delivery also requires a public URL in development. Use Clerk webhook tooling or a tunnel when testing local webhook behavior.
-
-## Current Limitations
-
-- No automated test suite yet
-- Database schema and constraints should be documented more formally
-- Some file lifecycle operations can still be improved for retry safety between Blob and database changes
-- Upload completion could be moved to a server callback if a reliable retry strategy is added
-- The UI is functional but still has room for polish in empty/error/loading states
-
-## Roadmap
-
-- Add tests for selection logic, naming conflicts, and folder move validation
-- Add stronger database constraints for per-folder name uniqueness
-- Improve root-folder recovery if a webhook is missed
-- Add preview support for common file types
-- Add better storage cleanup retry behavior
-- Add organization/shared-folder support
-
-## What I Learned
-
-This project brought together several concepts that are easy to underestimate in isolation:
-
-- How App Router server actions and client components fit together
-- Why server-to-server callbacks cannot rely on browser sessions
-- How to scope database operations by authenticated user ownership
-- How recursive folder operations work in SQL
-- Why selection state should have a single owner in React
-- How route protection, public callbacks, and webhooks need different auth strategies
-
-## Status
-
-This is an active learning project. It is intended to demonstrate practical full-stack product development, not just isolated UI components.
+- No automated test suite or migration runner is included.
+- Blob storage and database updates are separate operations; retries and cleanup can be improved.
+- The UI and empty, loading, and error states are still being refined.

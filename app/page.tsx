@@ -16,7 +16,7 @@ export default async function Home() {
   }
 
   return (
-    <main className="flex h-screen flex-col md:flex-row bg-primary">
+    <main className="flex min-h-screen flex-col md:flex-row bg-primary">
       <section className="w-full md:w-[60%] bg-primary text-primary-foreground flex items-center justify-center p-8 md:p-16">
         <div className="w-full max-w-4xl">
           <h1 className="text-3xl font-bold text-secondary mb-6">Exavault</h1>
@@ -32,18 +32,19 @@ export default async function Home() {
               Clerk.
             </p>
           </div>
-          <div className="mt-10 hidden md:block ">
+          <div className="mt-10 w-full">
             <Image
-              src="/preview.png"
+              src="https://5plx3c231cn3jpos.public.blob.vercel-storage.com/cd20ab80-a2de-410c-ad4a-95763781a162/exavault-vgs4ywaw4QfypNT1TlfjPpWQlfTJ59.png"
               alt="App preview"
               width={1200}
               height={800}
-              className="rounded-2xl border border-primary-foreground/10 shadow-2xl w-[80%]"
+              sizes="(max-width: 767px) calc(100vw - 4rem), (max-width: 1280px) 50vw, 640px"
+              className="h-auto w-full rounded-2xl border border-primary-foreground/10 shadow-2xl md:h-[38vh] md:w-auto md:max-w-full md:object-contain md:object-left"
             />
           </div>
         </div>
       </section>
-      <section className="w-full h-full  md:w-[40%] flex items-center justify-center p-6 md:p-12 rounded-t-xl md:rounded-none bg-background">
+      <section className="w-full md:min-h-screen md:w-[40%] flex items-center justify-center p-6 md:p-12 rounded-t-xl md:rounded-none bg-background">
         <div className="w-full  max-w-sm">
           <div className="flex flex-col gap-4 items-center justify-center">
             <div className="p-4 rounded-lg bg-primary">
